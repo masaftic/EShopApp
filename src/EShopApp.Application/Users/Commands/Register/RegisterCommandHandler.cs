@@ -2,12 +2,12 @@ using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Authentication;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
-using FluentResults;
+using ErrorOr;
 using MediatR;
 
 namespace EShopApp.Application.Users.Commands.Register;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<AuthenticationResult>>
+public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<AuthenticationResult>>
 {
     private readonly IUserService _userService;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
@@ -18,17 +18,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
-    public async Task<Result<AuthenticationResult>> Handle(RegisterCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<AuthenticationResult>> Handle(RegisterCommand command, CancellationToken cancellationToken)
     {
-        var user = new User(Guid.NewGuid(), request.FirstName, request.LastName, request.Email, request.Address);
+        // TODO: request validation
+        var user = new User(Guid.NewGuid(), command.FirstName, command.LastName, command.Email, command.Address);
         
-        var result = await _userService.RegisterUserAsync(user, request.Password);
-        if (result.IsSuccess)
+        var result = await _userService.RegisterUserAsync(user, command.Password);
+        if (result.IsError)
         {
-            var token = _jwtTokenGenerator.GenerateToken(user);
-            return Result.Ok(new AuthenticationResult(token));
+            return result.Errors;
         }
-
-        return Result.Fail(result.Errors);
+        
+        var token = _jwtTokenGenerator.GenerateToken(user);
+        return new AuthenticationResult(token);
     }
 }

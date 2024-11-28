@@ -1,7 +1,8 @@
-using EShopApp.Application.Common.DTOs;
+using System.Data.SqlTypes;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
-using FluentResults;
+using ErrorOr;
+using EShopApp.Domain.Errors;
 using Microsoft.AspNetCore.Identity;
 
 namespace EShopApp.Infrastructure.Identity;
@@ -17,65 +18,55 @@ public class IdentityUserService : IUserService
         _roleManager = roleManager;
     }
 
-    public async Task<Result<User>> GetUserByEmailAsync(string email)
+    public async Task<ErrorOr<User>> GetUserByEmailAsync(string email)
     {
         var applicationUser = await _userManager.FindByEmailAsync(email);
         if (applicationUser == null)
-            return Result.Fail($"email '{email}' not found");
+            return Errors.User.InvalidCredentials;
             
         var user = new User(applicationUser.Id, applicationUser.FirstName, applicationUser.LastName, applicationUser.Email!, applicationUser.Address);
-        return Result.Ok(user);
+        return user;
     }
 
-    public async Task<Result> RegisterUserAsync(User user, string password)
+    public async Task<ErrorOr<bool>> RegisterUserAsync(User user, string password)
     {
         var applicationUser = new ApplicationUser
         {
+            Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
             UserName = user.Email,
             Email = user.Email,
             Address = user.Address
         };
-
-        var result = await _userManager.CreateAsync(applicationUser, password);
-
-        if (result.Succeeded)
-        {
-            return Result.Ok();
-        }
         
-        return Result.Fail(result.Errors.Select(e => e.Description).ToList());
+        var result = await _userManager.CreateAsync(applicationUser, password);
+        if (result.Succeeded)
+            return true;
+        
+        return result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
     }
 
+    public async Task<bool> CheckPasswordAsync(User user, string password)
+    {
+        var applicationUser = new ApplicationUser
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserName = user.Email,
+            Email = user.Email,
+            Address = user.Address
+        };
+        
+        return await _userManager.CheckPasswordAsync(applicationUser, password);
+    }
 
-    public async Task<Result<User>> GetUserByIdAsync(Guid userId)
+    public async Task<ErrorOr<User>> GetUserByIdAsync(Guid userId)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null) return Result.Fail($"User with id '{userId}' was not found");
+        if (user == null) return Error.NotFound("User.IdNotFound", $"User with id '{userId}' was not found");
 
         return new User(user.Id, user.FirstName, user.LastName, user.Email, user.Address);
     }
-    //
-    // public async Task<bool> AssignRoleAsync(Guid userId, string role)
-    // {
-    //     var user = await _userManager.FindByIdAsync(userId.ToString());
-    //     if (user == null) return false;
-    //
-    //     if (!await _roleManager.RoleExistsAsync(role))
-    //     {
-    //         await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
-    //     }
-    //
-    //     var result = await _userManager.AddToRoleAsync(user, role);
-    //     return result.Succeeded;
-    // }
-    //
-    // public async Task<bool> ValidatePasswordAsync(Guid userId, string password)
-    // {
-    //     var user = await _userManager.FindByIdAsync(userId.ToString());
-    //     if (user == null) return false;
-    //
-    //     return await _userManager.CheckPasswordAsync(user, password);
-    // }
 }

@@ -1,7 +1,7 @@
 using EShopApp.Domain.Entities;
-using FluentResults;
+using ErrorOr;
 using MediatR;
 
 namespace EShopApp.Application.Users.Queries.Details;
 
-public record UserDetailsQuery(Guid Id) : IRequest<Result<User>>;
+public record UserDetailsQuery(Guid Id) : IRequest<ErrorOr<User>>;

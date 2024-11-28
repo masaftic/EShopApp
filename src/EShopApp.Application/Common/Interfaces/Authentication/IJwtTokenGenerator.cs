@@ -1,4 +1,3 @@
-using System;
 using EShopApp.Domain.Entities;
 
 namespace EShopApp.Application.Common.Interfaces.Authentication;

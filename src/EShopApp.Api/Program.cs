@@ -1,7 +1,6 @@
 using EShopApp.Api;
 using EShopApp.Application;
 using EShopApp.Infrastructure;
-using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 {

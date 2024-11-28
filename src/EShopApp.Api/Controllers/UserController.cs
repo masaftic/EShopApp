@@ -2,12 +2,10 @@ using System.Security.Claims;
 using EShopApp.Application.Users.Commands.Register;
 using EShopApp.Application.Users.Queries.Details;
 using EShopApp.Application.Users.Queries.Login;
+using EShopApp.Domain.Errors;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace EShopApp.Api.Controllers;
 
@@ -29,20 +27,14 @@ public class UserController : ApiController
     public async Task<IActionResult> Register([FromBody] RegisterCommand request)
     {
         var result = await _mediator.Send(request);
-        if (result.IsSuccess)
-        {
-            return Ok(new
+        return result.Match(
+            authenticationResult => Ok(new
             {
-                Message = "User successfully registered!",
-                Token = result.Value.Token
-            });
-        }
-
-        return BadRequest(new
-        {
-            Message = "Registration failed",
-            Errors = result.Errors
-        });
+                Message = "User registered successfully.",
+                Token = authenticationResult.Token
+            }),
+            errors => HandleErrors(errors)
+        );
     }
 
     [HttpPost]
@@ -51,19 +43,12 @@ public class UserController : ApiController
     public async Task<IActionResult> Login([FromBody] LoginQuery request)
     {
         var result = await _mediator.Send(request);
-        if (result.IsSuccess)
-        {
-            return Ok(new
-            {
-                Token = result.Value.Token
-            });
-        }
 
-        return BadRequest(new
-        {
-            Message = "Login failed",
-            Errors = result.Errors
-        });
+        // TODO: better result mapping
+        return result.Match(
+            authenticationResult => Ok(new { Token = authenticationResult.Token }),
+            errors => HandleErrors(errors)
+        );
     }
 
     [HttpGet]
@@ -78,6 +63,16 @@ public class UserController : ApiController
         }
 
         var result = await _mediator.Send(new UserDetailsQuery(new Guid(userId)));
-        return Ok(result.Value);
+        if (result.IsError && result.FirstError == Errors.User.InvalidCredentials)
+        {
+            return Problem(
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: result.FirstError.Description);
+        }
+
+        return result.Match(
+            authenticationResult => Ok(result.Value),
+            errors => HandleErrors(errors)
+        );
     }
 }

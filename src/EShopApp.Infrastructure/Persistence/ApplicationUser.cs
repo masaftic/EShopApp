@@ -1,4 +1,3 @@
-using EShopApp.Domain.Entities;
 using EShopApp.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 

@@ -4,15 +4,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Text.Json;
 using EShopApp.Application.Common.Interfaces.Authentication;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Infrastructure.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace EShopApp.Infrastructure;
