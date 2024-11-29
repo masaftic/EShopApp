@@ -26,7 +26,7 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, ErrorOr<Authenticat
             return Errors.User.InvalidCredentials;
         }
 
-        if (!await _userService.CheckPasswordAsync(result.Value, request.Password))
+        if (!await _userService.CheckPasswordAsync(result.Value.Id, request.Password))
         {
             return Errors.User.InvalidCredentials;
         }

@@ -10,6 +10,7 @@ using System.Text;
 using EShopApp.Application.Common.Interfaces.Authentication;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Infrastructure.Authentication;
+using EShopApp.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Options;
 
 namespace EShopApp.Infrastructure;
@@ -32,6 +33,9 @@ public static class DependencyInjection
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
+        
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options => { })
             .AddEntityFrameworkStores<ApplicationDbContext>()

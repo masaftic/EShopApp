@@ -1,4 +1,3 @@
-using System.Data.SqlTypes;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
 using ErrorOr;
@@ -21,24 +20,16 @@ public class IdentityUserService : IUserService
     public async Task<ErrorOr<User>> GetUserByEmailAsync(string email)
     {
         var applicationUser = await _userManager.FindByEmailAsync(email);
-        if (applicationUser == null)
+        if (applicationUser is null)
             return Errors.User.InvalidCredentials;
             
-        var user = new User(applicationUser.Id, applicationUser.FirstName, applicationUser.LastName, applicationUser.Email!, applicationUser.Address);
+        var user = applicationUser.ToDomainUser();
         return user;
     }
 
     public async Task<ErrorOr<bool>> RegisterUserAsync(User user, string password)
     {
-        var applicationUser = new ApplicationUser
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            UserName = user.Email,
-            Email = user.Email,
-            Address = user.Address
-        };
+        var applicationUser = ApplicationUser.FromUser(user);
         
         var result = await _userManager.CreateAsync(applicationUser, password);
         if (result.Succeeded)
@@ -47,17 +38,12 @@ public class IdentityUserService : IUserService
         return result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
     }
 
-    public async Task<bool> CheckPasswordAsync(User user, string password)
+    public async Task<bool> CheckPasswordAsync(Guid userId, string password)
     {
-        var applicationUser = new ApplicationUser
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            UserName = user.Email,
-            Email = user.Email,
-            Address = user.Address
-        };
+        var applicationUser = await _userManager.FindByIdAsync(userId.ToString());
+        if (applicationUser is null)
+            // TODO: maybe better handling
+            throw new Exception("User not found");
         
         return await _userManager.CheckPasswordAsync(applicationUser, password);
     }
@@ -67,6 +53,6 @@ public class IdentityUserService : IUserService
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null) return Error.NotFound("User.IdNotFound", $"User with id '{userId}' was not found");
 
-        return new User(user.Id, user.FirstName, user.LastName, user.Email, user.Address);
+        return user.ToDomainUser();
     }
 }
