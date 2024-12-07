@@ -1,8 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using EShopApp.Application.Common.Interfaces.Authentication;
-using EShopApp.Domain.Entities;
+using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,7 +16,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(User user)
+    public (string token, int expiresIn) GenerateToken(ApplicationUser user)
     {
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
@@ -29,6 +28,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
+            new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -40,6 +40,6 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             signingCredentials: signingCredentials
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(jwtToken);
+        return (new JwtSecurityTokenHandler().WriteToken(jwtToken), _jwtSettings.ExpiryMinutes * 60);
     }
 }

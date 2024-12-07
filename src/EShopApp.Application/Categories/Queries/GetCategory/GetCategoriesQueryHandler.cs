@@ -8,19 +8,19 @@ namespace EShopApp.Application.Categories.Queries.GetCategory;
 
 public class GetCategoryQueryHandler : IRequestHandler<GetCategoryQuery, ErrorOr<Category>>
 {
-    private readonly ICategoryRepository _categoryRepository;
+    private readonly IApplicationDbContext _dbContext;
 
-    public GetCategoryQueryHandler(ICategoryRepository CategoryRepository)
+    public GetCategoryQueryHandler(IApplicationDbContext dbContext)
     {
-        _categoryRepository = CategoryRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<Category>> Handle(GetCategoryQuery request, CancellationToken cancellationToken)
     {
-        var Category = await _categoryRepository.GetByIdAsync(request.Id);
-        if (Category is null)
+        var category = await _dbContext.Categories.FindAsync(request.Id, cancellationToken);
+        if (category is null)
             return Errors.Category.NotFound;
 
-        return Category;
+        return category;
     }
 }

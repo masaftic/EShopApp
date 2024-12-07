@@ -7,18 +7,18 @@ namespace EShopApp.Application.Categories.Commands.Add;
 
 public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, ErrorOr<Category>>
 {
-    private readonly ICategoryRepository _categoryRepository;
+    private readonly IApplicationDbContext _dbContext;
 
-    public AddCategoryCommandHandler(ICategoryRepository categoryRepository)
+    public AddCategoryCommandHandler(IApplicationDbContext dbContext)
     {
-        _categoryRepository = categoryRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<Category>> Handle(AddCategoryCommand request, CancellationToken cancellationToken)
     {
-        var category = new Category(Guid.NewGuid(), request.Name);
-        await _categoryRepository.AddAsync(category);
-        await _categoryRepository.SaveChangesAsync();
+        var category = new Category(request.Name);
+        await _dbContext.Categories.AddAsync(category, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
         return category;
     }
 }

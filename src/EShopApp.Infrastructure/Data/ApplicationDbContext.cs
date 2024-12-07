@@ -1,20 +1,23 @@
+using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
-using EShopApp.Infrastructure.Identity;
-using EShopApp.Infrastructure.Persistence.Migrations;
+using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Infrastructure.Persistence;
+namespace EShopApp.Infrastructure.Data;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
     
-    public DbSet<Product> Products { get; set; }
-    public DbSet<Category> Categories { get; set; }
+    public DbSet<Product> Products { get; init; }
+    public DbSet<Category> Categories { get; init; }
+    
+    
+    // TODO: Seeding data.
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -2,21 +2,21 @@ using ErrorOr;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace EShopApp.Application.Products.Queries.GetAllProducts;
 
 public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, ErrorOr<List<Product>>>
 {
-    private readonly IProductRepository _productRepository;
+    private readonly IApplicationDbContext _dbContext;
 
-    public GetAllProductsQueryHandler(IProductRepository productRepository)
+    public GetAllProductsQueryHandler(IApplicationDbContext dbContext)
     {
-        _productRepository = productRepository;
+        _dbContext = dbContext;
     }
-
-
+    
     public async Task<ErrorOr<List<Product>>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
     {
-        return (await _productRepository.GetAllAsync()).ToList();
+        return await _dbContext.Products.ToListAsync(cancellationToken: cancellationToken);
     }
 }

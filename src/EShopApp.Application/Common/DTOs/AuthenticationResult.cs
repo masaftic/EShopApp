@@ -1,11 +1,7 @@
 namespace EShopApp.Application.Common.DTOs;
 
-public class AuthenticationResult
+public class AuthenticationResult(string token, int expiresIn)
 { 
-    public string Token { get; set; }
-
-    public AuthenticationResult(string token)
-    {
-        Token = token;
-    }
+    public string Token { get; } = token;
+    public int ExpiresIn { get; } = expiresIn; // Seconds
 }

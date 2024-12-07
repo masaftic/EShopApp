@@ -2,7 +2,7 @@ using EShopApp.Domain.Entities;
 using EShopApp.Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 
-namespace EShopApp.Infrastructure.Identity;
+namespace EShopApp.Infrastructure.Data.Identity;
 
 public class ApplicationUser : IdentityUser<Guid>
 {

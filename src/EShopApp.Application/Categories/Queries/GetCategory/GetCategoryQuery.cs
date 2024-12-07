@@ -5,4 +5,4 @@ using MediatR;
 namespace EShopApp.Application.Categories.Queries.GetCategory;
 
 public record GetCategoryQuery(
-    Guid Id) : IRequest<ErrorOr<Category>>;
+    int Id) : IRequest<ErrorOr<Category>>;

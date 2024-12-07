@@ -27,8 +27,8 @@ public class CategoryController : ApiController
         );
     }
 
-    [HttpGet("{categoryId:guid}")]
-    public async Task<IActionResult> Get(Guid categoryId)
+    [HttpGet("{categoryId:int}")]
+    public async Task<IActionResult> Get(int categoryId)
     {
         var query = new GetCategoryQuery(categoryId);
         var result = await _mediator.Send(query);

@@ -1,5 +1,3 @@
-using EShopApp.Infrastructure.Identity;
-using EShopApp.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -7,10 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using EShopApp.Application.Common.Interfaces.Authentication;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Infrastructure.Authentication;
-using EShopApp.Infrastructure.Persistence.Repositories;
+using EShopApp.Infrastructure.Data;
+using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.Extensions.Options;
 
 namespace EShopApp.Infrastructure;
@@ -19,7 +17,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IUserService, IdentityUserService>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         AddAuth(services, configuration);
         AddPersistence(services, configuration);
@@ -29,13 +27,10 @@ public static class DependencyInjection
 
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
-        
-        services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options => { })
             .AddEntityFrameworkStores<ApplicationDbContext>()

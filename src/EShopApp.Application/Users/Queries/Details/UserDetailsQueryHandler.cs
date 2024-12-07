@@ -7,18 +7,18 @@ namespace EShopApp.Application.Users.Queries.Details;
 
 public class UserDetailsQueryHandler : IRequestHandler<UserDetailsQuery, ErrorOr<User>>
 {
-    private readonly IUserService _userService;
+    private readonly IIdentityService _identityService;
 
-    public UserDetailsQueryHandler(IUserService userService)
+    public UserDetailsQueryHandler(IIdentityService identityService)
     {
-        _userService = userService;
+        _identityService = identityService;
     }
 
 
     public async Task<ErrorOr<User>> Handle(UserDetailsQuery request, CancellationToken cancellationToken)
     {
         Console.WriteLine(request.Id.ToString());
-        var result = await _userService.GetUserByIdAsync(request.Id);
+        var result = await _identityService.GetUserByIdAsync(request.Id);
         return result;
     }
 }

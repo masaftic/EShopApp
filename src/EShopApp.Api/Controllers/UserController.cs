@@ -31,7 +31,8 @@ public class UserController : ApiController
             authenticationResult => Ok(new
             {
                 Message = "User registered successfully.",
-                Token = authenticationResult.Token
+                Token = authenticationResult.Token,
+                ExpiresIn = authenticationResult.ExpiresIn,
             }),
             errors => HandleErrors(errors)
         );
@@ -46,7 +47,11 @@ public class UserController : ApiController
 
         // TODO: better result mapping
         return result.Match(
-            authenticationResult => Ok(new { Token = authenticationResult.Token }),
+            authenticationResult => Ok(new
+            {
+                Token = authenticationResult.Token,
+                ExpiresIn = authenticationResult.ExpiresIn,
+            }),
             errors => HandleErrors(errors)
         );
     }

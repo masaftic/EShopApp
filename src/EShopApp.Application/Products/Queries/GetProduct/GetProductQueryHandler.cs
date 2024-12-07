@@ -8,16 +8,16 @@ namespace EShopApp.Application.Products.Queries.GetProduct;
 
 public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ErrorOr<Product>>
 {
-    private readonly IProductRepository _productRepository;
+    private readonly IApplicationDbContext _dbContext;
 
-    public GetProductQueryHandler(IProductRepository productRepository)
+    public GetProductQueryHandler(IApplicationDbContext dbContext)
     {
-        _productRepository = productRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<Product>> Handle(GetProductQuery request, CancellationToken cancellationToken)
     {
-        var product = await _productRepository.GetByIdAsync(request.Id);
+        var product = await _dbContext.Products.FindAsync(request.Id, cancellationToken);
         if (product is null)
             return Errors.Product.NotFound;
 

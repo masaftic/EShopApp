@@ -1,5 +1,4 @@
 using EShopApp.Application.Common.DTOs;
-using EShopApp.Application.Common.Interfaces.Authentication;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
 using ErrorOr;
@@ -9,13 +8,11 @@ namespace EShopApp.Application.Users.Commands.Register;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<AuthenticationResult>>
 {
-    private readonly IUserService _userService;
-    private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IIdentityService _identityService;
 
-    public RegisterCommandHandler(IUserService userService, IJwtTokenGenerator jwtTokenGenerator)
+    public RegisterCommandHandler(IIdentityService identityService)
     {
-        _userService = userService;
-        _jwtTokenGenerator = jwtTokenGenerator;
+        _identityService = identityService;
     }
 
     public async Task<ErrorOr<AuthenticationResult>> Handle(RegisterCommand command, CancellationToken cancellationToken)
@@ -23,13 +20,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
         // TODO: request validation
         var user = new User(Guid.NewGuid(), command.FirstName, command.LastName, command.Email, command.Address);
         
-        var result = await _userService.RegisterUserAsync(user, command.Password);
-        if (result.IsError)
-        {
-            return result.Errors;
-        }
-        
-        var token = _jwtTokenGenerator.GenerateToken(user);
-        return new AuthenticationResult(token);
+        var result = await _identityService.SignUpAsync(user, command.Password);
+        return result;
     }
 }
