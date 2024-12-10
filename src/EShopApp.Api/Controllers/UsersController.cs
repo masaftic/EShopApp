@@ -10,20 +10,27 @@ using Microsoft.AspNetCore.Mvc;
 namespace EShopApp.Api.Controllers;
 
 [Route("api/[controller]")]
-public class UserController : ApiController
+public class UsersController : ApiController
 {
-    private readonly ILogger<UserController> _logger;
+    private readonly ILogger<UsersController> _logger;
     private readonly IMediator _mediator;
 
-    public UserController(IMediator mediator, ILogger<UserController> logger)
+    public UsersController(IMediator mediator, ILogger<UsersController> logger)
     {
         _mediator = mediator;
         _logger = logger;
     }
 
-    [HttpPost]
     [AllowAnonymous]
-    [Route("register")]
+    [HttpGet]
+    public IActionResult Get()
+    {
+        return Ok("Hello World!");
+    }
+    
+
+    [AllowAnonymous]
+    [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand request)
     {
         var result = await _mediator.Send(request);
@@ -38,9 +45,8 @@ public class UserController : ApiController
         );
     }
 
-    [HttpPost]
     [AllowAnonymous]
-    [Route("login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginQuery request)
     {
         var result = await _mediator.Send(request);
@@ -56,8 +62,7 @@ public class UserController : ApiController
         );
     }
 
-    [HttpGet]
-    [Route("Details")]
+    [HttpGet("details")]
     public async Task<IActionResult> Details()
     {
         var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -67,7 +72,7 @@ public class UserController : ApiController
             return Unauthorized();
         }
 
-        var result = await _mediator.Send(new UserDetailsQuery(new Guid(userId)));
+        var result = await _mediator.Send(new UserDetailsQuery(int.Parse(userId)));
         if (result.IsError && result.FirstError == Errors.User.InvalidCredentials)
         {
             return Problem(

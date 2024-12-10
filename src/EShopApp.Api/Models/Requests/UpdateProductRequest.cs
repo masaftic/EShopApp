@@ -1,6 +1,6 @@
 namespace EShopApp.Api.Models.Requests;
 
-public record AddProductRequest(
+public record UpdateProductRequest(
     string Name,
     int Quantity,
     decimal PriceAmount,

@@ -1,4 +1,4 @@
-namespace EShopApp.Domain.Entities;
+namespace EShopApp.Domain.Enums;
 
 public enum OrderState
 {

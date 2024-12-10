@@ -11,10 +11,10 @@ namespace EShopApp.Infrastructure.Data.Identity;
 public class IdentityService : IIdentityService
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
+    private readonly RoleManager<IdentityRole<int>> _roleManager;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-    public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager,
+    public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<int>> roleManager,
         IJwtTokenGenerator jwtTokenGenerator)
     {
         _userManager = userManager;
@@ -40,7 +40,7 @@ public class IdentityService : IIdentityService
         if (!result.Succeeded) 
             return result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
         
-        var (token, expiresIn) = _jwtTokenGenerator.GenerateToken(applicationUser);
+        var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
         return new AuthenticationResult(token, expiresIn);
     }
 
@@ -54,11 +54,11 @@ public class IdentityService : IIdentityService
         if (!result)
             return Errors.User.InvalidCredentials;
 
-        var (token, expiresIn) = _jwtTokenGenerator.GenerateToken(applicationUser);
+        var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
         return new AuthenticationResult(token, expiresIn);
     }
 
-    public async Task<ErrorOr<User>> GetUserByIdAsync(Guid userId)
+    public async Task<ErrorOr<User>> GetUserByIdAsync(int userId)
     {
         var applicationUser = await _userManager.FindByIdAsync(userId.ToString());
         if (applicationUser is null)

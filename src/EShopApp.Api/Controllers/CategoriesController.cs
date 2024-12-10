@@ -2,16 +2,17 @@ using EShopApp.Application.Categories.Commands.Add;
 using EShopApp.Application.Categories.Queries.GetAllCategories;
 using EShopApp.Application.Categories.Queries.GetCategory;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShopApp.Api.Controllers;
 
 [Route("api/[controller]")]
-public class CategoryController : ApiController
+public class CategoriesController : ApiController
 {
     private readonly IMediator _mediator;
 
-    public CategoryController(IMediator mediator)
+    public CategoriesController(IMediator mediator)
     {
         _mediator = mediator;
     }
@@ -21,10 +22,8 @@ public class CategoryController : ApiController
     {
         var query = new GetAllCategoriesQuery();
         var result = await _mediator.Send(query);
-        return result.Match(
-            success => Ok(result.Value),
-            errors => HandleErrors(errors)
-        );
+
+        return ToOkOrErrors(result);
     }
 
     [HttpGet("{categoryId:int}")]
@@ -32,18 +31,18 @@ public class CategoryController : ApiController
     {
         var query = new GetCategoryQuery(categoryId);
         var result = await _mediator.Send(query);
-        return result.Match(
-            success => Ok(result.Value),
-            errors => HandleErrors(errors)
-        );
+
+        return ToOkOrErrors(result);
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddCategory(AddCategoryCommand command)
     {
         var result = await _mediator.Send(command);
+
         return result.Match(
-            success => Ok(result.Value),
+            value => CreatedAtAction(nameof(Get), new { categoryId = value.Id }, value),
             errors => HandleErrors(errors)
         );
     }

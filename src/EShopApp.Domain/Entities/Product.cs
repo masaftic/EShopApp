@@ -2,24 +2,23 @@ using EShopApp.Domain.ValueObjects;
 
 namespace EShopApp.Domain.Entities;
 
-public class Product : Entity<Guid>
+public class Product : Entity<int>
 {
     public string Name { get; private set; }
     public int Quantity { get; private set; }
     public Money Price { get; private set; }
     public string Description { get; private set; }
-    public Guid CategoryId { get; private set; }
+    public int CategoryId { get; private set; }
     public Category Category { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
 
-    private Product(Guid id) : base(id)
+    private Product()
     {
-        
     }
-    public Product(Guid id, string name, Money price, string description, Guid categoryId)
-        : base(id)
+    
+    public Product(string name, Money price, string description, int categoryId)
     {
         Name = name;
         Quantity = 0;
@@ -29,7 +28,18 @@ public class Product : Entity<Guid>
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void UpdateProduct(string name, int quantity, Money price, string description, int categoryId)
+    {
+        Name = name;
+        Quantity = quantity;
+        Price = price;
+        Description = description;
+        CategoryId = categoryId;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
+    // TODO: Domain Errors
     public void AddStock(int amount)
     {
         if (amount <= 0)

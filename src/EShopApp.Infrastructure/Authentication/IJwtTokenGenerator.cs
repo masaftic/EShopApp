@@ -4,5 +4,5 @@ namespace EShopApp.Infrastructure.Authentication;
 
 public interface IJwtTokenGenerator
 {
-    (string token, int expiresIn) GenerateToken(ApplicationUser user);
+    Task<(string token, int expiresIn)> GenerateTokenAsync(ApplicationUser user);
 }

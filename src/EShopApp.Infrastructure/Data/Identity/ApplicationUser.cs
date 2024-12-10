@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EShopApp.Infrastructure.Data.Identity;
 
-public class ApplicationUser : IdentityUser<Guid>
+public class ApplicationUser : IdentityUser<int>
 {
     public string FirstName { get; set; }
     public string LastName { get; set; }
@@ -13,7 +13,7 @@ public class ApplicationUser : IdentityUser<Guid>
 
     public User ToDomainUser()
     {
-        return new User(this.Id, this.FirstName, this.LastName, this.Email, this.Address); 
+        return new User(this.FirstName, this.LastName, this.Email!, this.Address); 
     }
 
     public static ApplicationUser FromUser(User user)

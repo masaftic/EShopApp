@@ -10,4 +10,4 @@ public record AddProductCommand(
     decimal PriceAmount,
     string PriceCurrency,
     string Description,
-    Guid CategoryId) : IRequest<ErrorOr<Product>>;
+    int CategoryId) : IRequest<ErrorOr<Product>>;

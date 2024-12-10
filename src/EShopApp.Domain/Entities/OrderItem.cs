@@ -2,12 +2,12 @@ namespace EShopApp.Domain.Entities;
 
 public class OrderItem
 {
-    public Guid ProductId { get; private set; }
+    public int ProductId { get; private set; }
     public int Quantity { get; private set; }
     public decimal Price { get; private set; } // Price at the time of order
     
     
-    public OrderItem(Guid productId, string variant, int quantity, decimal price)
+    public OrderItem(int productId, string variant, int quantity, decimal price)
     {
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be greater than 0.");

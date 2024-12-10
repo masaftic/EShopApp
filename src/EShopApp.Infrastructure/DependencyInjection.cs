@@ -18,9 +18,10 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<DataSeeder>();
 
-        AddAuth(services, configuration);
         AddPersistence(services, configuration);
+        AddAuth(services, configuration);
 
         return services;
     }
@@ -32,7 +33,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
 
-        services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options => { })
+        services.AddIdentity<ApplicationUser, IdentityRole<int>>(options => { })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
@@ -50,7 +51,7 @@ public static class DependencyInjection
         configuration.Bind(JwtSettings.SectionName, jwtSettings);
 
         services.AddSingleton(Options.Create(jwtSettings));
-        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

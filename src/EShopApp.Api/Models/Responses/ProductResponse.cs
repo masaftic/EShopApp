@@ -1,11 +1,12 @@
+using EShopApp.Domain.ValueObjects;
+
 namespace EShopApp.Api.Models.Responses;
 
 public record ProductResponse(
-    Guid Id,
+    int Id,
     string Name,
     int Quantity,
-    decimal PriceAmount,
-    string PriceCurrency,
+    string Price,
     string Description,
-    Guid CategoryId
+    int CategoryId
 );

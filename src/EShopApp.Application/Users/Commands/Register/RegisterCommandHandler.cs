@@ -18,7 +18,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
     public async Task<ErrorOr<AuthenticationResult>> Handle(RegisterCommand command, CancellationToken cancellationToken)
     {
         // TODO: request validation
-        var user = new User(Guid.NewGuid(), command.FirstName, command.LastName, command.Email, command.Address);
+        var user = new User(command.FirstName, command.LastName, command.Email, command.Address);
         
         var result = await _identityService.SignUpAsync(user, command.Password);
         return result;

@@ -4,4 +4,4 @@ using MediatR;
 
 namespace EShopApp.Application.Users.Queries.Details;
 
-public record UserDetailsQuery(Guid Id) : IRequest<ErrorOr<User>>;
+public record UserDetailsQuery(int Id) : IRequest<ErrorOr<User>>;

@@ -1,9 +1,11 @@
+using EShopApp.Domain.Enums;
+
 namespace EShopApp.Domain.Entities;
 
 public class Order
 {
-    public Guid Id { get; private set; }
-    public Guid UserId { get; private set; }
+    public int Id { get; private set; }
+    public int UserId { get; private set; }
     public List<OrderItem> Items { get; private set; }
     public OrderState State { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -11,9 +13,8 @@ public class Order
     public DateTime? CanceledAt { get; private set; }
     
     
-    public Order(Guid userId, List<OrderItem> items)
+    public Order(int userId, List<OrderItem> items)
     {
-        Id = Guid.NewGuid();
         UserId = userId;
         Items = items ?? throw new ArgumentNullException(nameof(items));
         State = OrderState.Pending;

@@ -6,7 +6,7 @@ namespace EShopApp.Application.Common.Interfaces.Persistence;
 
 public interface IIdentityService
 {
-    Task<ErrorOr<User>> GetUserByIdAsync(Guid userId);
+    Task<ErrorOr<User>> GetUserByIdAsync(int userId);
     Task<ErrorOr<User>> GetUserByEmailAsync(string email);
     Task<ErrorOr<AuthenticationResult>> SignUpAsync(User user, string password);
     Task<ErrorOr<AuthenticationResult>> SignInAsync(string email, string password);

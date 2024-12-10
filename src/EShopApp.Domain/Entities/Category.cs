@@ -1,7 +1,7 @@
 namespace EShopApp.Domain.Entities;
 
 // TODO: validating domain entities creation
-public class Category : Entity<Guid>
+public class Category : Entity<int>
 {
     public string Name { get; private set; }
     // TODO: Hierarchical categories
