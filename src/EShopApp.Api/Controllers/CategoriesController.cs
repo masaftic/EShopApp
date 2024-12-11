@@ -1,6 +1,7 @@
+using EShopApp.Api.Models.Requests;
 using EShopApp.Application.Categories.Commands.Add;
-using EShopApp.Application.Categories.Queries.GetAllCategories;
-using EShopApp.Application.Categories.Queries.GetCategory;
+using EShopApp.Application.Categories.Queries.GetCategories;
+using EShopApp.Application.Categories.Queries.GetCategoryById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,22 +19,26 @@ public class CategoriesController : ApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetCategories([FromQuery] GetCategoriesRequest request)
     {
-        var query = new GetAllCategoriesQuery();
+        var segments = request.Path?.Split("/", StringSplitOptions.RemoveEmptyEntries);
+        
+        var query = new GetCategoriesQuery(segments);
         var result = await _mediator.Send(query);
 
         return ToOkOrErrors(result);
     }
 
-    [HttpGet("{categoryId:int}")]
-    public async Task<IActionResult> Get(int categoryId)
+
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
     {
-        var query = new GetCategoryQuery(categoryId);
+        var query = new GetCategoryByIdQuery(id);
         var result = await _mediator.Send(query);
 
         return ToOkOrErrors(result);
     }
+    
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -42,7 +47,7 @@ public class CategoriesController : ApiController
         var result = await _mediator.Send(command);
 
         return result.Match(
-            value => CreatedAtAction(nameof(Get), new { categoryId = value.Id }, value),
+            value => CreatedAtAction(nameof(GetById), new { categoryId = value.Id }, value),
             errors => HandleErrors(errors)
         );
     }

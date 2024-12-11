@@ -16,5 +16,8 @@ public class CategoriesConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(255)
             .IsRequired();
         
+        builder.Property(p => p.Path)
+            .HasMaxLength(255)
+            .IsRequired();
     }
 }

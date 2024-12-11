@@ -5,4 +5,5 @@ using ErrorOr;
 namespace EShopApp.Application.Categories.Commands.Add;
 
 public record AddCategoryCommand(
-    string Name) : IRequest<ErrorOr<Category>>;
+    string Name,
+    string Path) : IRequest<ErrorOr<Category>>;

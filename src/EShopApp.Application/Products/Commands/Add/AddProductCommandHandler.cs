@@ -21,7 +21,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Error
     {
         var category = await _dbContext.Categories.FindAsync(request.CategoryId, cancellationToken);
         if (category == null)
-            return Errors.Category.NotFound;
+            return Errors.Category.NotFound(request.CategoryId);
         
         var product = new Product(request.Name, new Money(request.PriceAmount, request.PriceCurrency), request.Description, request.CategoryId);
         
