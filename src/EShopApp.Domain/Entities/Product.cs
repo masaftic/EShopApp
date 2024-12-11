@@ -38,6 +38,11 @@ public class Product : Entity<int>
         CategoryId = categoryId;
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void DeleteProduct()
+    {
+        DeletedAt = DateTime.UtcNow;
+    }
 
     // TODO: Domain Errors
     public void AddStock(int amount)

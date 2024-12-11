@@ -24,7 +24,8 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, ErrorO
         if (product == null)
             return Errors.Product.NotFound;
         
-        _dbContext.Products.Remove(product);
+        product.DeleteProduct();
+        
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Deleted;

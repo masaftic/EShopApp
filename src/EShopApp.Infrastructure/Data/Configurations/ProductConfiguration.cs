@@ -21,5 +21,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             b.Property(m => m.Amount).HasColumnType("decimal(18,2)");
             b.Property(m => m.Currency).HasMaxLength(3);
         });
+
+        builder.HasQueryFilter(p => p.DeletedAt == null);
     }
 }
