@@ -1,3 +1,6 @@
+using EShopApp.Application.Common.Helpers;
+using EShopApp.Application.Common.Interfaces.Services;
+using EShopApp.Application.Common.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EShopApp.Application;
@@ -8,6 +11,9 @@ public static class DependencyInjection
     {
         services.AddMediatR(config => 
             config.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+        
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<CategoryPathProcessor>();
         
         return services;
     }

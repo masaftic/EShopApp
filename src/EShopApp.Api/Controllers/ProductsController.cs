@@ -3,8 +3,8 @@ using EShopApp.Api.Models.Requests;
 using EShopApp.Application.Products.Commands.Add;
 using EShopApp.Application.Products.Commands.Delete;
 using EShopApp.Application.Products.Commands.Update;
-using EShopApp.Application.Products.Queries.GetAllProducts;
 using EShopApp.Application.Products.Queries.GetProduct;
+using EShopApp.Application.Products.Queries.GetProducts;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,8 +24,17 @@ public class ProductsController : ApiController
     [HttpGet]
     public async Task<IActionResult> GetProducts([FromQuery] GetProductsRequest request)
     {
-        var query = new GetProductsQuery(request.CategoryId, request.MinPrice, request.MaxPrice, request.PageNumber,
+        if (request.Path is not null && request.CategoryId is not null)
+        {
+            return BadRequest("Filter either by CategoryId or by Path, but not both.");
+        }
+        
+        var segments = request.Path?.Split("/", StringSplitOptions.RemoveEmptyEntries);
+        
+        
+        var query = new GetProductsQuery(request.CategoryId, segments, request.MinPrice, request.MaxPrice, request.PageNumber,
             request.PageSize);
+        
         var result = await _mediator.Send(query);
 
         return result.Match(
