@@ -9,9 +9,14 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
     public void Configure(EntityTypeBuilder<Product> builder)
     {
         builder.HasKey(p => p.Id);
-        
+
         builder.Property(p => p.Id).ValueGeneratedOnAdd();
-        
+
+        builder.HasOne(p => p.Category)
+            .WithMany()
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Property(p => p.Name)
             .HasMaxLength(255)
             .IsRequired();

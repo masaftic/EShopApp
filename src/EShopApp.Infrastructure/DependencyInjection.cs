@@ -6,9 +6,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EShopApp.Application.Common.Interfaces.Persistence;
+using EShopApp.Application.Common.Interfaces.Services;
+using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
 using EShopApp.Infrastructure.Authentication;
 using EShopApp.Infrastructure.Data;
 using EShopApp.Infrastructure.Data.Identity;
+using EShopApp.Infrastructure.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace EShopApp.Infrastructure;
@@ -19,6 +23,8 @@ public static class DependencyInjection
     {
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<DataSeeder>();
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         AddPersistence(services, configuration);
         AddAuth(services, configuration);

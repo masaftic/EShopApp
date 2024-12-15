@@ -22,6 +22,51 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Carts", (string)null);
+                });
+
+            modelBuilder.Entity("EShopApp.Domain.Entities.CartItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CartItems");
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -296,6 +341,56 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Cart", b =>
+                {
+                    b.HasOne("EShopApp.Infrastructure.Data.Identity.ApplicationUser", null)
+                        .WithOne()
+                        .HasForeignKey("EShopApp.Domain.Entities.Cart", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EShopApp.Domain.Entities.CartItem", b =>
+                {
+                    b.HasOne("EShopApp.Domain.Entities.Cart", "Cart")
+                        .WithMany("CartItems")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EShopApp.Domain.Entities.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("EShopApp.Domain.ValueObjects.Money", "Price", b1 =>
+                        {
+                            b1.Property<int>("CartItemId")
+                                .HasColumnType("int");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("decimal(18,2)");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)");
+
+                            b1.HasKey("CartItemId");
+
+                            b1.ToTable("CartItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CartItemId");
+                        });
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Price")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.Product", b =>
                 {
                     b.HasOne("EShopApp.Domain.Entities.Category", "Category")
@@ -414,6 +509,11 @@ namespace EShopApp.Infrastructure.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("EShopApp.Domain.Entities.Cart", b =>
+                {
+                    b.Navigation("CartItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,18 @@
+using System.Security.Claims;
+using EShopApp.Application.Common.Interfaces.Services;
+using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
+using Microsoft.AspNetCore.Http;
+
+namespace EShopApp.Infrastructure.Services;
+
+public class CurrentUserService : ICurrentUserService
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public string? UserId => _httpContextAccessor?.HttpContext?.User?.Claims?.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+}
