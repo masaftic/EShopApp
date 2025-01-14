@@ -13,6 +13,11 @@ public class CategoryPathProcessor
         _categoryService = categoryService;
     }
 
+    /// <summary>
+    /// Returns all categories in the segments path after parsing the segments
+    /// </summary>
+    /// <param name="segments"></param>
+    /// <returns></returns>
     public async Task<ErrorOr<List<Category>>> ProcessSegmentsAsync(string[] segments)
     {
         var numericSegmentsCount = segments.Count(s => int.TryParse(s, out _));

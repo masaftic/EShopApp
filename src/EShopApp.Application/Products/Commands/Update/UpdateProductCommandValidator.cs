@@ -1,0 +1,30 @@
+using FluentValidation;
+
+namespace EShopApp.Application.Products.Commands.Update;
+
+public class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
+{
+    public UpdateProductCommandValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("{PropertyName} is required.")
+            .MaximumLength(100).WithMessage("{PropertyName} must not exceed 100 characters.");
+        
+        RuleFor(x => x.Description)
+            .NotEmpty().WithMessage("{PropertyName} is required.")
+            .MaximumLength(500).WithMessage("{PropertyName} must not exceed 500 characters.");
+        
+        RuleFor(x => x.Quantity)
+            .GreaterThan(0).WithMessage("{PropertyName} must be greater than 0.");
+        
+        RuleFor(x => x.PriceAmount)
+            .GreaterThan(0).WithMessage("{PropertyName} must be greater than 0.");
+        
+        RuleFor(x => x.PriceCurrency)
+            .NotEmpty().WithMessage("{PropertyName} is required.")
+            .MaximumLength(3).WithMessage("{PropertyName} must not exceed 3 characters.");
+        
+        RuleFor(x => x.CategoryId)
+            .GreaterThan(0).WithMessage("{PropertyName} must be greater than 0.");
+    }
+}

@@ -35,7 +35,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ErrorOr
         if (userCart == null)
         {
             userCart = new Cart(userId);
-            _dbContext.Carts.Add(userCart);
+            await _dbContext.Carts.AddAsync(userCart, cancellationToken);
         }
 
         var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId,

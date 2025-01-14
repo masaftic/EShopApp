@@ -32,12 +32,15 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ErrorOr
         }
         else if (request.Segments is not null)
         {
+            // Get all categories in the request path
             var subCategoriesResult = await _categoryPathProcessor.ProcessSegmentsAsync(request.Segments);
             if (subCategoriesResult.IsError)
                 return subCategoriesResult.Errors;
             
+            // map categories to Ids
             var subCategoriesIds = subCategoriesResult.Value.Select(c => c.Id).ToList();
             
+            // limit products to ones that have a categoryId in the subCategoriesResult
             query = query.Where(p => subCategoriesIds.Contains(p.CategoryId));
         }
 
