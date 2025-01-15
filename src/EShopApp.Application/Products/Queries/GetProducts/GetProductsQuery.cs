@@ -7,7 +7,7 @@ namespace EShopApp.Application.Products.Queries.GetProducts;
 
 public record GetProductsQuery(
     int? CategoryId,
-    string[]? Segments,
+    string? Path,
     decimal? MinPrice,
     decimal? MaxPrice,
     int PageNumber,

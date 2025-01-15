@@ -17,24 +17,38 @@ public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, Err
 
     public async Task<ErrorOr<Category>> Handle(AddCategoryCommand request, CancellationToken cancellationToken)
     {
-        if (request.Path != string.Empty) 
+        var parentPath = "";
+
+        if (request.ParentId is not null)
         {
-            var checkUniqueLocalCategory = await _dbContext.Categories.FirstOrDefaultAsync(c =>
-                    c.Name == request.Name
-                    && c.Path.Length == request.Path.Length + 2 // direct children of request's path
-                    && c.Path.StartsWith(request.Path), // same parent path
+            var parent = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == request.ParentId,
+                cancellationToken: cancellationToken);
+
+            if (parent is null)
+                return Error.NotFound(description: "parent category not found");
+            
+            parentPath = parent.Path;
+            
+            var checkUniqueLocalCategory = await _dbContext.Categories
+                .FirstOrDefaultAsync(c =>
+                        c.Name == request.Name && // Same name
+                        c.Path.Length == parent.Path.Length + 2 && // Direct ancestors of parent
+                        c.Path.StartsWith(parent.Path), // Same ancestor path
                     cancellationToken: cancellationToken);
 
             if (checkUniqueLocalCategory is not null)
                 return Error.Conflict("Category.Exists", "Category already exists");
-
-            // Must check if parent category exists to form a valid hierarchy
-            var checkExistingParentCategory = await _dbContext.Categories.FirstOrDefaultAsync(c =>
-                    c.Path == request.Path, // same parent path
+        }
+        else
+        {
+            var checkUniqueRootCategory = await _dbContext.Categories
+                .FirstOrDefaultAsync(c =>
+                        c.Name == request.Name
+                        && c.Path.Length == 2,
                     cancellationToken: cancellationToken);
-            
-            if (checkExistingParentCategory is null)
-                return Error.Conflict(description: "Category parent not found");
+
+            if (checkUniqueRootCategory is not null)
+                return Error.Conflict("Category.Exists", "Category already exists");
         }
 
         var category = new Category(request.Name);
@@ -42,7 +56,7 @@ public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, Err
         await _dbContext.Categories.AddAsync(category, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        category.InitPath(request.Path); // Calculate path after generating categoryID
+        category.InitPath(parentPath); // Calculate path after generating categoryID
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return category;

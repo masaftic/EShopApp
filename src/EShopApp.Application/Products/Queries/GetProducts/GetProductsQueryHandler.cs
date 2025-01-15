@@ -30,10 +30,12 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ErrorOr
         {
             query = query.Where(p => p.CategoryId == request.CategoryId);
         }
-        else if (request.Segments is not null)
+        else if (request.Path is not null)
         {
+            var segments = request.Path.Split("/", StringSplitOptions.RemoveEmptyEntries);
+            
             // Get all categories in the request path
-            var subCategoriesResult = await _categoryPathProcessor.ProcessSegmentsAsync(request.Segments);
+            var subCategoriesResult = await _categoryPathProcessor.ProcessSegmentsAsync(segments);
             if (subCategoriesResult.IsError)
                 return subCategoriesResult.Errors;
             
@@ -45,17 +47,18 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ErrorOr
         }
 
         if (request.MinPrice is not null)
-            query = query.Where(p => p.Price.Amount >= request.MinPrice);
+            query = query.Where(p => p.Price >= request.MinPrice);
 
         if (request.MaxPrice is not null)
-            query = query.Where(p => p.Price.Amount <= request.MaxPrice);
+            query = query.Where(p => p.Price <= request.MaxPrice);
 
         query = query
             .Skip(request.PageSize * (request.PageNumber - 1))
             .Take(request.PageSize);
 
+        var totalCount = await _dbContext.Products.CountAsync(cancellationToken: cancellationToken);
         var products = await query.ToListAsync(cancellationToken: cancellationToken);
-
-        return new PaginatedList<Product>(products, request.PageSize, request.PageNumber);
+        
+        return new PaginatedList<Product>(products, totalCount, request.PageSize, request.PageNumber);
     }
 }

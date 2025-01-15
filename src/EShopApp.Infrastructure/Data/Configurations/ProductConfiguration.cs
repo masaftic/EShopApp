@@ -21,11 +21,8 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(255)
             .IsRequired();
 
-        builder.OwnsOne(p => p.Price, b =>
-        {
-            b.Property(m => m.Amount).HasColumnType("decimal(18,2)");
-            b.Property(m => m.Currency).HasMaxLength(3);
-        });
+
+        builder.Property(p => p.Price).HasColumnType("decimal(18,2)");
 
         builder.HasQueryFilter(p => p.DeletedAt == null);
     }

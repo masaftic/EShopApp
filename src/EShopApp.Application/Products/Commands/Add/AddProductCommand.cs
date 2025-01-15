@@ -7,7 +7,6 @@ namespace EShopApp.Application.Products.Commands.Add;
 public record AddProductCommand(
     string Name,
     int Quantity,
-    decimal PriceAmount,
-    string PriceCurrency,
+    decimal Price,
     string Description,
     int CategoryId) : IRequest<ErrorOr<Product>>;

@@ -6,4 +6,4 @@ namespace EShopApp.Application.Categories.Commands.Add;
 
 public record AddCategoryCommand(
     string Name,
-    string Path) : IRequest<ErrorOr<Category>>;
+    int? ParentId) : IRequest<ErrorOr<Category>>;

@@ -15,7 +15,7 @@ public class Cart : Entity<int>
     public List<CartItem> CartItems { get; private set; } = [];
 
 
-    public CartItem AddToCart(int productId, int quantity, Money price)
+    public CartItem AddToCart(int productId, int quantity, decimal price)
     {
         var existingCartItem = CartItems.FirstOrDefault(ci => ci.ProductId == productId);
 

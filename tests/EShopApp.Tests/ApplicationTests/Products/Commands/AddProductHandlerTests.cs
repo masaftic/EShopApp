@@ -25,8 +25,7 @@ public class AddProductHandlerTests
         (
             Name: "Test Product",
             Quantity: 1,
-            PriceAmount: 100,
-            PriceCurrency: "USD",
+            Price: 100,
             Description: "Test Description",
             CategoryId: 1
         );
@@ -49,24 +48,22 @@ public class AddProductHandlerTests
         (
             Name: "Test Product",
             Quantity: 1,
-            PriceAmount: 100,
-            PriceCurrency: "USD",
+            Price: 100,
             Description: "Test Description",
             CategoryId: 1
         );
 
         var category = new Category("Test Category");
-        _mockDbContext.Categories.FindAsync(command.CategoryId).Returns(category);
-        
+        _mockDbContext.Categories.FindAsync(command.CategoryId, Arg.Any<CancellationToken>()).Returns(category);
+
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
-        
+
         // Assert
         Assert.False(result.IsError);
         Assert.NotNull(result.Value);
         Assert.Equal(command.Name, result.Value.Name);
-        Assert.Equal(command.PriceAmount, result.Value.Price.Amount);
-        Assert.Equal(command.PriceCurrency, result.Value.Price.Currency);
+        Assert.Equal(command.Price, result.Value.Price);
         Assert.Equal(command.Description, result.Value.Description);
         Assert.Equal(command.CategoryId, result.Value.CategoryId);
 

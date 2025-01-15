@@ -46,7 +46,7 @@ using (var scope = app.Services.CreateScope())
     var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
     await seeder.MigrateAsync();
     await seeder.SetUpRoles();
-    await seeder.CreateAdminAsync();
+    await seeder.SeedAsync();
 }
 
 app.Run();

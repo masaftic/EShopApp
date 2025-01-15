@@ -8,10 +8,10 @@ public class PaginatedList<T>
     public int PageNumber { get; }
     public int TotalPages => (TotalCount + PageSize - 1) / PageSize;
     
-    public PaginatedList(IReadOnlyList<T> items, int pageSize, int pageNumber)
+    public PaginatedList(IReadOnlyList<T> items, int totalCount, int pageSize, int pageNumber)
     {
         Items = items;
-        TotalCount = items.Count;
+        TotalCount = totalCount;
         PageSize = pageSize;
         PageNumber = pageNumber;
     }

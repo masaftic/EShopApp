@@ -16,7 +16,13 @@ public class Category : Entity<int>
     // Must be called after initializing ID.
     public void InitPath(string parentPath)
     {
-        if (Path == string.Empty && Id != 0)
+        if (Path == string.Empty && Id != 0) 
             Path = $"{parentPath}/{Id}";
+    }
+    
+    public void SetIdAndPath(int id, string path)
+    {
+        this.Id = id;
+        this.Path = path;
     }
 }

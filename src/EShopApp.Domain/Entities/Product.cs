@@ -6,19 +6,19 @@ public class Product : Entity<int>
 {
     public string Name { get; private set; }
     public int Quantity { get; private set; }
-    public Money Price { get; private set; }
+    public decimal Price { get; private set; }
     public string Description { get; private set; }
     public int CategoryId { get; private set; }
     public Category Category { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
-
-    private Product()
+    
+    public Product()
     {
     }
-    
-    public Product(string name, Money price, string description, int categoryId)
+
+    public Product(string name, decimal price, string description, int categoryId)
     {
         Name = name;
         Quantity = 0;
@@ -28,8 +28,8 @@ public class Product : Entity<int>
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
-    
-    public void UpdateProduct(string name, int quantity, Money price, string description, int categoryId)
+
+    public void UpdateProduct(string name, int quantity, decimal price, string description, int categoryId)
     {
         Name = name;
         Quantity = quantity;
@@ -38,7 +38,7 @@ public class Product : Entity<int>
         CategoryId = categoryId;
         UpdatedAt = DateTime.UtcNow;
     }
-    
+
     public void DeleteProduct()
     {
         DeletedAt = DateTime.UtcNow;

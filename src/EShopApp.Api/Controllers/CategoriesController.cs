@@ -30,10 +30,10 @@ public class CategoriesController : ApiController
     }
 
 
-    [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id)
+    [HttpGet("{categoryId:int}")]
+    public async Task<IActionResult> GetById(int categoryId)
     {
-        var query = new GetCategoryByIdQuery(id);
+        var query = new GetCategoryByIdQuery(categoryId);
         var result = await _mediator.Send(query);
 
         return ToOkOrErrors(result);

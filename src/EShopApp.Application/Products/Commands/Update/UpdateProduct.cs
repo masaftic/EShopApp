@@ -11,8 +11,7 @@ public record UpdateProductCommand(
     int Id,
     string Name,
     int Quantity,
-    decimal PriceAmount,
-    string PriceCurrency,
+    decimal Price,
     string Description,
     int CategoryId) : IRequest<ErrorOr<Product>>;
 
@@ -35,7 +34,7 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         if (product == null)
             return Errors.Product.NotFound;
 
-        product.UpdateProduct(request.Name, request.Quantity, new Money(request.PriceAmount, request.PriceCurrency),
+        product.UpdateProduct(request.Name, request.Quantity, request.Price,
             request.Description, request.CategoryId);
         await _dbContext.SaveChangesAsync(cancellationToken);
 

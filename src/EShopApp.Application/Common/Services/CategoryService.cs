@@ -59,7 +59,7 @@ public class CategoryService : ICategoryService
     private async Task<ErrorOr<List<Category>>> RetrieveCategoriesFromHierarchyPath(List<int> pathIds)
     {
         var path = $"/{string.Join("/", pathIds)}";
-        var categories = await _dbContext.Categories.Where(c => c.Path.StartsWith(path)).ToListAsync();
+        var categories = await _dbContext.Categories.Where(c => c.Path == path || (path != "/" && c.Path.StartsWith(path + "/"))).ToListAsync();
 
         if (categories.Count == 0)
             return Errors.Category.PathNotFound;

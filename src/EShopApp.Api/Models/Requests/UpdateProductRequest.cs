@@ -3,8 +3,7 @@ namespace EShopApp.Api.Models.Requests;
 public record UpdateProductRequest(
     string Name,
     int Quantity,
-    decimal PriceAmount,
-    string PriceCurrency,
+    decimal Price,
     string Description,
     int CategoryId
 );

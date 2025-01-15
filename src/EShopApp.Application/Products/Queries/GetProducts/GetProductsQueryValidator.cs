@@ -1,0 +1,38 @@
+using FluentValidation;
+
+namespace EShopApp.Application.Products.Queries.GetProducts;
+
+public class GetProductsQueryValidator : AbstractValidator<GetProductsQuery>
+{
+    public GetProductsQueryValidator()
+    {
+        RuleFor(x => x.CategoryId)
+            .GreaterThan(0).When(x => x.CategoryId.HasValue)
+            .WithMessage("CategoryId must be a positive number.");
+
+        RuleFor(x => x.Path)
+            .Matches(@"^(/[\w-]+)+$")
+            .When(x => !string.IsNullOrEmpty(x.Path))
+            .WithMessage("Path must follow the format /1/4/5 or /Electronics/Phones.");
+
+        RuleFor(x => x.MinPrice)
+            .GreaterThanOrEqualTo(0).When(x => x.MinPrice.HasValue)
+            .WithMessage("MinPrice must be a positive value.");
+
+        RuleFor(x => x.MaxPrice)
+            .GreaterThanOrEqualTo(0).When(x => x.MaxPrice.HasValue)
+            .WithMessage("MaxPrice must be a positive value.");
+
+        RuleFor(x => new { x.MinPrice, x.MaxPrice })
+            .Must(x => !x.MinPrice.HasValue || !x.MaxPrice.HasValue || x.MinPrice <= x.MaxPrice)
+            .WithMessage("MinPrice cannot be greater than MaxPrice.");
+
+        RuleFor(x => x.PageNumber)
+            .GreaterThanOrEqualTo(1)
+            .WithMessage("PageNumber must be 1 or greater.");
+
+        RuleFor(x => x.PageSize)
+            .GreaterThanOrEqualTo(1).WithMessage("PageSize must be 1 or greater.")
+            .LessThanOrEqualTo(100).WithMessage("PageSize cannot exceed 100.");
+    }
+}

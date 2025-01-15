@@ -28,13 +28,11 @@ public class ProductsController : ApiController
         {
             return BadRequest("Filter either by CategoryId or by Path, but not both.");
         }
-        
-        var segments = request.Path?.Split("/", StringSplitOptions.RemoveEmptyEntries);
-        
-        
-        var query = new GetProductsQuery(request.CategoryId, segments, request.MinPrice, request.MaxPrice, request.PageNumber,
+
+        var query = new GetProductsQuery(request.CategoryId, request.Path, request.MinPrice, request.MaxPrice,
+            request.PageNumber,
             request.PageSize);
-        
+
         var result = await _mediator.Send(query);
 
         return result.Match(
@@ -59,7 +57,7 @@ public class ProductsController : ApiController
     [HttpPost("{categoryId:int}")]
     public async Task<IActionResult> AddProduct(AddProductRequest request, int categoryId)
     {
-        var command = new AddProductCommand(request.Name, request.Quantity, request.PriceAmount, request.PriceCurrency,
+        var command = new AddProductCommand(request.Name, request.Quantity, request.Price,
             request.Description, categoryId);
         var result = await _mediator.Send(command);
 
@@ -82,8 +80,7 @@ public class ProductsController : ApiController
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductRequest request)
     {
-        var command = new UpdateProductCommand(id, request.Name, request.Quantity, request.PriceAmount,
-            request.PriceCurrency,
+        var command = new UpdateProductCommand(id, request.Name, request.Quantity, request.Price,
             request.Description, request.CategoryId);
 
         var result = await _mediator.Send(command);

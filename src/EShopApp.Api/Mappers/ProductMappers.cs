@@ -15,6 +15,6 @@ public static class ProductMappers
     public static PaginatedList<ProductResponse> ToPaginatedListResponse(this PaginatedList<Product> products)
     {
         return new PaginatedList<ProductResponse>(
-            products.Items.Select(p => p.ToProductResponse()).ToList(), products.PageSize, products.PageNumber);
+            products.Items.Select(p => p.ToProductResponse()).ToList(), products.TotalCount, products.PageSize, products.PageNumber);
     }
 }
