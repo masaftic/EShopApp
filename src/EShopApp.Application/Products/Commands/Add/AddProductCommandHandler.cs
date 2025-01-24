@@ -20,7 +20,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Error
     
     public async Task<ErrorOr<Product>> Handle(AddProductCommand command, CancellationToken cancellationToken)
     {
-        var category = await _dbContext.Categories.FirstOrDefaultAsync(c => c.Id == command.CategoryId, cancellationToken);
+        var category = await _dbContext.Categories.FindAsync(command.CategoryId);
         if (category == null)
             return Errors.Category.NotFound(command.CategoryId);
         

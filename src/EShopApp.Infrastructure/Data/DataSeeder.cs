@@ -51,6 +51,7 @@ public class DataSeeder
         await CreateAdminAsync();
         await SeedCategoriesAsync();
         await SeedProductsAsync(100);
+        await SeedInventoriesAsync();
     }
 
     private async Task SeedCategoriesAsync()
@@ -97,7 +98,7 @@ public class DataSeeder
             id += 1;
         }
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        await using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
@@ -141,6 +142,32 @@ public class DataSeeder
         var products = productFaker.Generate(count);
 
         await _context.Products.AddRangeAsync(products);
+        await _context.SaveChangesAsync();
+    }
+    
+    
+    private async Task SeedInventoriesAsync()
+    {
+        if (await _context.Inventories.AnyAsync())
+            return;
+
+        var productsIds = await _context.Products.Select(p => p.Id).ToListAsync();
+
+
+        var inventoryFaker = new Faker<Inventory>()
+            .RuleFor(i => i.Stock, f => f.Random.Number(1, 100))
+            .RuleFor(i => i.ReservedStock, f => f.Random.Number(1, 10))
+            .RuleFor(i => i.ReorderLevel, f => f.Random.Number(5, 20))
+            .RuleFor(i => i.ReorderQuantity, f => f.Random.Number(5, 20));
+
+        var inventories = inventoryFaker.Generate(productsIds.Count);
+
+        for (var i = 0; i < productsIds.Count; i++)
+        {
+            inventories[i].ProductId = productsIds[i];
+        }
+        
+        await _context.Inventories.AddRangeAsync(inventories);
         await _context.SaveChangesAsync();
     }
 }

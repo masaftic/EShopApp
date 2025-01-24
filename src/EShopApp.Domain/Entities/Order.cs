@@ -1,44 +1,29 @@
+using System.Dynamic;
 using EShopApp.Domain.Enums;
+using EShopApp.Domain.ValueObjects;
 
 namespace EShopApp.Domain.Entities;
 
-public class Order
+public class Order : Entity<int>
 {
-    public int Id { get; private set; }
-    public int UserId { get; private set; }
-    public List<OrderItem> Items { get; private set; }
-    public OrderState State { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? ShippedAt { get; private set; }
-    public DateTime? CanceledAt { get; private set; }
-    
-    
-    public Order(int userId, List<OrderItem> items)
-    {
-        UserId = userId;
-        Items = items ?? throw new ArgumentNullException(nameof(items));
-        State = OrderState.Pending;
-        CreatedAt = DateTime.UtcNow;
-    }
-    
-    public void ShipOrder()
-    {
-        if (State != OrderState.Pending)
-            throw new InvalidOperationException("Only pending orders can be shipped.");
-        State = OrderState.Shipped;
-        ShippedAt = DateTime.UtcNow;
-    }
+    public int UserId { get; set; }
+    public string OrderNumber { get; set; }
+    public ICollection<OrderItem> OrderItems { get; set; }
 
-    public void CancelOrder()
-    {
-        if (State != OrderState.Pending)
-            throw new InvalidOperationException("Only pending orders can be canceled.");
-        State = OrderState.Canceled;
-        CanceledAt = DateTime.UtcNow;
-    }
+    public decimal TotalAmount { get; set; }
 
-    public decimal TotalPrice()
-    {
-        return Items.Sum(item => item.Price * item.Quantity);
-    }
+    public OrderStatus Status { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? ShippedAt { get; set; }
+    public DateTime? CanceledAt { get; set; }
+
+
+    // Shipping details
+    public Address ShippingAddress { get; set; }
+    public string ShippingPostalCode { get; set; }
+
+
+    // Future payment details
+    public string PaymentMethod { get; set; } = "";
+    public string TransactionId { get; set; } = "";
 }

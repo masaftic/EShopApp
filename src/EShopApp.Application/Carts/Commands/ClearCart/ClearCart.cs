@@ -1,12 +1,10 @@
-using System.Windows.Input;
 using ErrorOr;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Application.ShoppingCarts.Commands.ClearCart;
+namespace EShopApp.Application.Carts.Commands.ClearCart;
 
 public record ClearCartCommand : IRequest<ErrorOr<Success>>;
 
@@ -31,7 +29,7 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, ErrorOr
         if (userCart == null)
             return Error.NotFound("Cart.NotFound");
 
-        _dbContext.CartItems.RemoveRange(userCart.CartItems);
+        userCart.CartItems.Clear();
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

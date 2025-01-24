@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
 using Microsoft.AspNetCore.Http;
 
 namespace EShopApp.Infrastructure.Services;

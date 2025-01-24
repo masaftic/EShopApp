@@ -2,6 +2,7 @@ using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Products.Commands.Add;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
 namespace EShopApp.Tests.ApplicationTests.Products.Commands;
@@ -54,11 +55,12 @@ public class AddProductHandlerTests
         );
 
         var category = new Category("Test Category");
-        _mockDbContext.Categories.FindAsync(command.CategoryId, Arg.Any<CancellationToken>()).Returns(category);
+        _mockDbContext.Categories.FindAsync(command.CategoryId).Returns(category);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
+  
         // Assert
         Assert.False(result.IsError);
         Assert.NotNull(result.Value);

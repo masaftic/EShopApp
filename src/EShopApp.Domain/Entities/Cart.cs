@@ -7,13 +7,21 @@ public class Cart : Entity<int>
 {
     public int UserId { get; private set; }
 
+    public DateTime? SessionExpiryDate { get; private set; }
+
+    public static TimeSpan DefaultSessionExpiryDuration = TimeSpan.FromMinutes(15);
+    public decimal TotalPrice => CartItems.Sum(ci => ci.UnitPrice * ci.Quantity);
     public Cart(int userId)
     {
         UserId = userId;
     }
 
-    public List<CartItem> CartItems { get; private set; } = [];
+    public ICollection<CartItem> CartItems { get; private set; } = [];
 
+    public void SetExpiryDate(DateTime expiryDate)
+    {
+        SessionExpiryDate = expiryDate;
+    }
 
     public CartItem AddToCart(int productId, int quantity, decimal price)
     {

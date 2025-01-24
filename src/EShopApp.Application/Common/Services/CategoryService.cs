@@ -37,9 +37,9 @@ public class CategoryService : ICategoryService
         {
             // /laptops/lenovo
             // /1/2
-            // because names can match under different subtrees
-            // name position must be the same as path length
-            // name position is multiplied by 2 because of '/' characters
+            // - because names can match under different subtrees
+            //   name position must be the same as path length.
+            // - name position is multiplied by 2 because of '/' characters
 
             var name = names[i].ToLower();
             var category = await _dbContext.Categories

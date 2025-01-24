@@ -1,8 +1,9 @@
 namespace EShopApp.Domain.Enums;
 
-public enum OrderState
+public enum OrderStatus
 {
     Pending,
     Shipped,
+    Failed,
     Canceled
 }

@@ -1,13 +1,15 @@
 using ErrorOr;
+using EShopApp.Application.Carts.DTOs;
 using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
+using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Application.ShoppingCarts.Commands.AddToCart;
+namespace EShopApp.Application.Carts.Commands.AddToCart;
 
 public record AddToCartCommand(int ProductId, int Quantity) : IRequest<ErrorOr<CartItemDto>>;
 
@@ -50,6 +52,6 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ErrorOr
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return cartItem.ToDto();
+        return cartItem.Adapt<CartItemDto>();
     }
 }

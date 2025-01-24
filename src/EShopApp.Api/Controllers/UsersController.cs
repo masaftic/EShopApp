@@ -50,8 +50,7 @@ public class UsersController : ApiController
     public async Task<IActionResult> Login([FromBody] LoginQuery request)
     {
         var result = await _mediator.Send(request);
-
-        // TODO: better result mapping
+        
         return result.Match(
             authenticationResult => Ok(new
             {

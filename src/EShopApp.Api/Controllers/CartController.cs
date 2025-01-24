@@ -1,7 +1,8 @@
 using EShopApp.Api.Models.Requests;
-using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
-using EShopApp.Application.ShoppingCarts.Commands.ClearCart;
-using EShopApp.Application.ShoppingCarts.Queries.Get;
+using EShopApp.Application.Carts.Commands.AddToCart;
+using EShopApp.Application.Carts.Commands.Checkout;
+using EShopApp.Application.Carts.Commands.ClearCart;
+using EShopApp.Application.Carts.Queries.Get;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,6 +41,15 @@ public class CartController : ApiController
     {
         var clearCartCommand = new ClearCartCommand();
         var result = await _mediator.Send(clearCartCommand);
+        return ToOkOrErrors(result);
+    }
+
+
+    [HttpPost("checkout")]
+    public async Task<IActionResult> Checkout()
+    {
+        var checkoutCommand = new CheckoutCommand();
+        var result = await _mediator.Send(checkoutCommand);
         return ToOkOrErrors(result);
     }
 }

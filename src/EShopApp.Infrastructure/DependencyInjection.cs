@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
+using EShopApp.Application.Common.Options;
 using EShopApp.Infrastructure.Authentication;
 using EShopApp.Infrastructure.Data;
 using EShopApp.Infrastructure.Data.Identity;
@@ -39,16 +39,23 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
 
-        services.AddIdentity<ApplicationUser, IdentityRole<int>>(options => { })
+        var identityOptions = new ApplicationIdentityOptions();
+
+        services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequiredLength = identityOptions.PasswordRequiredLength;
+                options.Password.RequireDigit = identityOptions.PasswordRequireDigit;
+                options.Password.RequireLowercase = identityOptions.PasswordRequireLowercase;
+                options.Password.RequireUppercase = identityOptions.PasswordRequireUppercase;
+                options.Password.RequireNonAlphanumeric = identityOptions.PasswordRequireNonAlphanumeric;
+                options.User.RequireUniqueEmail = true;
+                options.User.AllowedUserNameCharacters =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-_";
+            })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        services.Configure<IdentityOptions>(options =>
-        {
-            options.User.AllowedUserNameCharacters =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-_";
-            options.User.RequireUniqueEmail = true;
-        });
+        services.AddSingleton(identityOptions);
     }
 
     private static void AddAuth(IServiceCollection services, IConfiguration configuration)
@@ -58,6 +65,8 @@ public static class DependencyInjection
 
         services.AddSingleton(Options.Create(jwtSettings));
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+        services.AddAuthorization();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -75,11 +84,6 @@ public static class DependencyInjection
 
                 options.Events = new JwtBearerEvents
                 {
-                    OnAuthenticationFailed = context =>
-                    {
-                        Console.WriteLine($"Authentication failed: {context.Exception.Message}");
-                        return Task.CompletedTask;
-                    },
                     OnTokenValidated = context =>
                     {
                         Console.WriteLine("Token validated successfully.");
@@ -88,14 +92,15 @@ public static class DependencyInjection
                 };
             });
 
+
         // Suppress the default cookie scheme added by Identity
-        services.ConfigureApplicationCookie(options =>
-        {
-            // options.Cookie.HttpOnly = true;
-            // options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            // options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-            // options.SlidingExpiration = true;
-            // options.LoginPath = string.Empty; // Prevent redirects for unauthorized access
-        });
+        // services.ConfigureApplicationCookie(options =>
+        // {
+        //     options.Cookie.HttpOnly = true;
+        //     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        //     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        //     options.SlidingExpiration = true;
+        //     options.LoginPath = string.Empty; // Prevent redirects for unauthorized access
+        // });
     }
 }

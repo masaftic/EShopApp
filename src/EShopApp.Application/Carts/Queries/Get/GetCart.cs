@@ -1,13 +1,13 @@
 using ErrorOr;
+using EShopApp.Application.Carts.DTOs;
 using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.ShoppingCarts.Commands.AddToCart;
-using EShopApp.Domain.Entities;
+using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Application.ShoppingCarts.Queries.Get;
+namespace EShopApp.Application.Carts.Queries.Get;
 
 public record GetCartQuery : IRequest<ErrorOr<CartDto>>;
 
@@ -26,12 +26,13 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, ErrorOr<CartDto
     {
         var userId = int.Parse(_currentUserService.UserId);
         var userCart = await _dbContext.Carts
-            .Include(c => c.CartItems)
-            .SingleOrDefaultAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
+            .Where(c => c.UserId == userId)
+            .ProjectToType<CartDto>()
+            .SingleOrDefaultAsync(cancellationToken);
 
         if (userCart == null)
             return Error.NotFound("Cart.NotFound");
 
-        return userCart.ToDto();
+        return userCart;
     }
 }

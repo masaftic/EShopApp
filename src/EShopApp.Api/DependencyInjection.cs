@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ErrorOr;
 
 namespace EShopApp.Api;
@@ -8,7 +9,7 @@ public static class DependencyInjection
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        services.AddControllers();
+        services.AddControllers(); 
         services.AddProblemDetails(config =>
         {
             config.CustomizeProblemDetails = context =>
@@ -22,6 +23,7 @@ public static class DependencyInjection
                 }
             };
         });
+
 
         return services;
     }

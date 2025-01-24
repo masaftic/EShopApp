@@ -9,17 +9,16 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
 {
     public void Configure(EntityTypeBuilder<Cart> builder)
     {
-        builder.ToTable("Carts");
-
-        // Primary Key
-        builder.HasKey(c => c.Id);
-
+        builder
+            .HasMany(c => c.CartItems)
+            .WithOne(ci => ci.Cart)
+            .HasForeignKey(ci => ci.CartId);
+        
         // Enforce one-to-one relationship
         builder
             .HasOne<ApplicationUser>() // Cart belongs to one User
-            .WithOne() // User has one Cart
+            .WithOne(u => u.Cart) // User has one Cart
             .HasForeignKey<Cart>(c => c.UserId) // ForeignKey is UserId
             .OnDelete(DeleteBehavior.Cascade); // Cascade delete if User is deleted
-        
     }
 }

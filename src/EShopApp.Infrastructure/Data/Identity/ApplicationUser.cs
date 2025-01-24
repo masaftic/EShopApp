@@ -9,18 +9,24 @@ public class ApplicationUser : IdentityUser<int>
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public Address Address { get; set; }
-
+    
+    public ICollection<Order> Orders { get; set; }
+    public Cart Cart { get; set; }
 
     public User ToDomainUser()
     {
-        return new User(this.FirstName, this.LastName, this.Email!, this.Address); 
+        var user = new User(this.FirstName, this.LastName, this.Email!, this.Address)
+        {
+            Id = this.Id
+        };
+
+        return user;
     }
 
     public static ApplicationUser FromUser(User user)
     {
         var applicationUser = new ApplicationUser
         {
-            Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
             UserName = user.Email,
