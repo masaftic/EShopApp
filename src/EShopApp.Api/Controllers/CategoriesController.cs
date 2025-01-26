@@ -26,7 +26,7 @@ public class CategoriesController : ApiController
         var query = new GetCategoriesQuery(segments);
         var result = await _mediator.Send(query);
 
-        return ToOkOrErrors(result);
+        return result.Match(Ok, HandleErrors);
     }
 
 
@@ -36,7 +36,7 @@ public class CategoriesController : ApiController
         var query = new GetCategoryByIdQuery(categoryId);
         var result = await _mediator.Send(query);
 
-        return ToOkOrErrors(result);
+        return result.Match(Ok, HandleErrors);
     }
     
 
@@ -48,7 +48,7 @@ public class CategoriesController : ApiController
 
         return result.Match(
             value => CreatedAtAction(nameof(GetById), new { categoryId = value.Id }, value),
-            errors => HandleErrors(errors)
+            HandleErrors
         );
     }
 }

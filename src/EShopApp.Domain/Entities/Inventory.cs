@@ -10,6 +10,14 @@ public class Inventory : Entity<int>
     public int ReorderLevel { get; set; }
     public int ReorderQuantity { get; set; }
 
+    public Inventory(int productId, int stock, int reorderQuantity, int reorderLevel)
+    {
+        ProductId = productId;
+        Stock = stock;
+        ReservedStock = 0;
+        ReorderLevel = reorderLevel;
+        ReorderQuantity = reorderQuantity;
+    }
 
     public void Reserve(int quantity)
     {

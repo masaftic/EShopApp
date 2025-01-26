@@ -5,9 +5,7 @@ using MediatR;
 
 namespace EShopApp.Application.Products.Commands.Delete;
 
-
 public record DeleteProductCommand(int Id) : IRequest<ErrorOr<Deleted>>;
-
 
 public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, ErrorOr<Deleted>>
 {
@@ -20,12 +18,11 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, ErrorO
 
     public async Task<ErrorOr<Deleted>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
-        var product = await _dbContext.Products.FindAsync(request.Id, cancellationToken);
+        var product = await _dbContext.Products.FindAsync([request.Id], cancellationToken);
         if (product == null)
             return Errors.Product.NotFound;
-        
-        product.DeleteProduct();
-        
+
+        _dbContext.Products.Remove(product);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Deleted;

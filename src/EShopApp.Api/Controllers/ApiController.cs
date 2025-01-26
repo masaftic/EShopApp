@@ -10,23 +10,6 @@ namespace EShopApp.Api.Controllers;
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class ApiController : ControllerBase
 {
-    protected IActionResult ToOkOrErrors<T>(ErrorOr<T> result)
-    {
-        return result.Match(
-            success => Ok(success),
-            HandleErrors
-        );
-    }
-    
-    protected IActionResult ToNoContentOrErrors<T>(ErrorOr<T> result)
-    {
-        return result.Match(
-            success => NoContent(),
-            HandleErrors
-        );
-    }
-    
-    
     protected IActionResult HandleErrors(List<Error> errors)
     {
         if (errors.Count == 0)

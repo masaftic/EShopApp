@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EShopApp.Api.Controllers;
 
-
 [Route("api/[controller]")]
 public class CartController : ApiController
 {
@@ -24,24 +23,24 @@ public class CartController : ApiController
     {
         var getCartQuery = new GetCartQuery();
         var result = await _mediator.Send(getCartQuery);
-        return ToOkOrErrors(result);
+        return result.Match(Ok, HandleErrors);
     }
-    
+
 
     [HttpPost("add-to-cart")]
     public async Task<IActionResult> AddToCart([FromBody] AddCartItemRequest request)
     {
         var addToCartCommand = new AddToCartCommand(request.ProductId, request.Quantity);
         var result = await _mediator.Send(addToCartCommand);
-        return ToOkOrErrors(result);
+        return result.Match(Ok, HandleErrors);
     }
-    
+
     [HttpPost("clear-cart")]
     public async Task<IActionResult> ClearCart()
     {
         var clearCartCommand = new ClearCartCommand();
         var result = await _mediator.Send(clearCartCommand);
-        return ToOkOrErrors(result);
+        return result.Match(value => NoContent(), HandleErrors);
     }
 
 
@@ -50,6 +49,6 @@ public class CartController : ApiController
     {
         var checkoutCommand = new CheckoutCommand();
         var result = await _mediator.Send(checkoutCommand);
-        return ToOkOrErrors(result);
+        return result.Match(Ok, HandleErrors);
     }
 }

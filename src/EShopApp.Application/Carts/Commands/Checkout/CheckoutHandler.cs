@@ -44,16 +44,17 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<C
             cartItem.UpdatePrice(cartItem.Product.Price);
         }
 
-        var inventoryProducts = await _dbContext.Inventories
+        var productsInventories = await _dbContext.Inventories
             .Where(i => cart.CartItems.Select(ci => ci.ProductId).Contains(i.ProductId))
-            .ToListAsync(cancellationToken);
+            .ToDictionaryAsync(key => key.ProductId, value => value, cancellationToken: cancellationToken);
 
         // Validate stock
         foreach (var cartItem in cart.CartItems)
         {
-            var inventory = inventoryProducts.First(i => i.ProductId == cartItem.ProductId);
-            if (inventory.AvailableStock < cartItem.Quantity)
+            if (!productsInventories.TryGetValue(cartItem.ProductId, out var inventory))
+            {
                 return Error.Conflict(description: $"Insufficient stock for product {cartItem.ProductId}");
+            }
         }
 
 
@@ -78,15 +79,22 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<C
 
         // TODO: Domain events
 
-        // Reserve products
+        var inventoryTransactions = new List<InventoryTransaction>();
+
+        // Reserve products & write the inventory transactions
         foreach (var cartItem in cart.CartItems)
         {
-            var inventory = inventoryProducts.First(i => i.ProductId == cartItem.ProductId);
+            var inventory = productsInventories[cartItem.ProductId];
             inventory.Reserve(cartItem.Quantity);
+
+            var transaction = new InventoryTransaction(inventory.Id, cartItem.Quantity,
+                InventoryTransactionType.Reserve, DateTime.UtcNow, "Checkout Reservation");
+            inventoryTransactions.Add(transaction);
         }
 
+        await _dbContext.InventoryTransactions.AddRangeAsync(inventoryTransactions, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        
+
         return cart.Adapt<CartDto>();
     }
 }

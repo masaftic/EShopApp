@@ -41,7 +41,7 @@ public static class DependencyInjection
 
         var identityOptions = new ApplicationIdentityOptions();
 
-        services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+        services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
             {
                 options.Password.RequiredLength = identityOptions.PasswordRequiredLength;
                 options.Password.RequireDigit = identityOptions.PasswordRequireDigit;

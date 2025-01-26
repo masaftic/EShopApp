@@ -50,8 +50,7 @@ public class DataSeeder
     {
         await CreateAdminAsync();
         await SeedCategoriesAsync();
-        await SeedProductsAsync(100);
-        await SeedInventoriesAsync();
+        await SeedProductsAndInventoriesAsync(100);
     }
 
     private async Task SeedCategoriesAsync()
@@ -123,51 +122,44 @@ public class DataSeeder
         }
     }
 
-    private async Task SeedProductsAsync(int count)
+    private async Task SeedProductsAndInventoriesAsync(int count)
     {
         if (await _context.Products.AnyAsync())
             return;
-
+        
         var categoryIds = await _context.Categories.Select(c => c.Id).ToListAsync();
 
         var productFaker = new Faker<Product>()
             .RuleFor(p => p.Name, f => f.Commerce.ProductName())
-            .RuleFor(p => p.Quantity, f => f.Random.Number(1, 10))
             .RuleFor(p => p.Price, f => f.Random.Decimal(1, 100))
             .RuleFor(p => p.Description, f => f.Lorem.Sentence())
             .RuleFor(p => p.CreatedAt, f => f.Date.Past(2))
-            .RuleFor(p => p.UpdatedAt, f => f.Date.Past(1))
+            .RuleFor(p => p.UpdatedAt, (f, u) => u.CreatedAt)
             .RuleFor(p => p.CategoryId, f => f.PickRandom(categoryIds));
-
-        var products = productFaker.Generate(count);
-
-        await _context.Products.AddRangeAsync(products);
-        await _context.SaveChangesAsync();
-    }
-    
-    
-    private async Task SeedInventoriesAsync()
-    {
-        if (await _context.Inventories.AnyAsync())
-            return;
-
-        var productsIds = await _context.Products.Select(p => p.Id).ToListAsync();
-
 
         var inventoryFaker = new Faker<Inventory>()
             .RuleFor(i => i.Stock, f => f.Random.Number(1, 100))
             .RuleFor(i => i.ReservedStock, f => f.Random.Number(1, 10))
             .RuleFor(i => i.ReorderLevel, f => f.Random.Number(5, 20))
             .RuleFor(i => i.ReorderQuantity, f => f.Random.Number(5, 20));
-
-        var inventories = inventoryFaker.Generate(productsIds.Count);
-
-        for (var i = 0; i < productsIds.Count; i++)
-        {
-            inventories[i].ProductId = productsIds[i];
-        }
         
-        await _context.Inventories.AddRangeAsync(inventories);
+        var products = new List<Product>();
+        var inventories = new List<Inventory>();
+        
+        for (var i = 0; i < count; i++)
+        {
+            var product = productFaker.Generate();
+            var inventory = inventoryFaker.Generate();
+            product.Inventory = inventory;
+            inventory.Product = product;
+            products.Add(product);
+            inventories.Add(inventory);
+        }
+
+        await _context.AddRangeAsync(products);
+        await _context.AddRangeAsync(inventories);
+        
         await _context.SaveChangesAsync();
     }
+    
 }

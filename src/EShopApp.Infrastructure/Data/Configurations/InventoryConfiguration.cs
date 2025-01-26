@@ -9,20 +9,8 @@ public class InventoryConfiguration : IEntityTypeConfiguration<Inventory>
     public void Configure(EntityTypeBuilder<Inventory> builder)
     {
         builder.HasOne<Product>(i => i.Product)
-            .WithOne()
+            .WithOne(p => p.Inventory)
             .HasForeignKey<Inventory>(i => i.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
-    }
-}
-
-
-public class InventoryTransactionsConfiguration : IEntityTypeConfiguration<InventoryTransaction>
-{
-    public void Configure(EntityTypeBuilder<InventoryTransaction> builder)
-    {
-        builder.HasOne<Product>(it => it.Product)
-            .WithOne()
-            .HasForeignKey<InventoryTransaction>(i => i.ProductId)
-            .OnDelete(DeleteBehavior.NoAction);
     }
 }

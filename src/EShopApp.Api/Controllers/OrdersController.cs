@@ -9,7 +9,7 @@ namespace EShopApp.Api.Controllers;
 public class OrdersController : ApiController
 {
     private readonly IMediator _mediator;
-    
+
     public OrdersController(IMediator mediator)
     {
         _mediator = mediator;
@@ -21,7 +21,7 @@ public class OrdersController : ApiController
         var query = new GetOrderByIdQuery(id);
         var result = await _mediator.Send(query);
 
-        return ToOkOrErrors(result);
+        return result.Match(Ok, HandleErrors);
     }
 
     [HttpPost("")]

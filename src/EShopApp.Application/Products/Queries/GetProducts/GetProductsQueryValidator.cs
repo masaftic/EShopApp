@@ -10,11 +10,6 @@ public class GetProductsQueryValidator : AbstractValidator<GetProductsQuery>
             .GreaterThan(0).When(x => x.CategoryId.HasValue)
             .WithMessage("CategoryId must be a positive number.");
 
-        RuleFor(x => x.Path)
-            .Matches(@"^(/[\w-]+)+$")
-            .When(x => !string.IsNullOrEmpty(x.Path))
-            .WithMessage("Path must follow the format /1/4/5 or /Electronics/Phones.");
-
         RuleFor(x => x.MinPrice)
             .GreaterThanOrEqualTo(0).When(x => x.MinPrice.HasValue)
             .WithMessage("MinPrice must be a positive value.");

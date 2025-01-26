@@ -1,4 +1,3 @@
-using EShopApp.Api.Mappers;
 using EShopApp.Api.Models.Requests;
 using EShopApp.Application.Products.Commands.Add;
 using EShopApp.Application.Products.Commands.Delete;
@@ -24,46 +23,36 @@ public class ProductsController : ApiController
     [HttpGet]
     public async Task<IActionResult> GetProducts([FromQuery] GetProductsRequest request)
     {
-        if (request.Path is not null && request.CategoryId is not null)
-        {
-            return BadRequest("Filter either by CategoryId or by Path, but not both.");
-        }
-
-        var query = new GetProductsQuery(request.CategoryId, request.Path, request.MinPrice, request.MaxPrice,
+        var query = new GetProductsQuery(request.CategoryId, request.MinPrice, request.MaxPrice,
             request.PageNumber,
             request.PageSize);
 
         var result = await _mediator.Send(query);
 
-        return result.Match(
-            value => Ok(value.ToPaginatedListResponse()),
-            errors => HandleErrors(errors)
-        );
+        return result.Match(Ok, HandleErrors);
     }
 
     [HttpGet("{productId:int}")]
     public async Task<IActionResult> GetProductById(int productId)
     {
-        var query = new GetProductQuery(productId);
+        var query = new GetProductByIdQuery(productId);
         var result = await _mediator.Send(query);
 
-        return result.Match(
-            value => Ok(value.ToProductResponse()),
-            errors => HandleErrors(errors)
-        );
+        return result.Match(Ok, HandleErrors);
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPost("{categoryId:int}")]
-    public async Task<IActionResult> AddProduct(AddProductRequest request, int categoryId)
+    [HttpPost]
+    public async Task<IActionResult> AddProduct(AddProductRequest request)
     {
         var command = new AddProductCommand(request.Name, request.Quantity, request.Price,
-            request.Description, categoryId);
+            request.Description, request.CategoryId);
+
         var result = await _mediator.Send(command);
 
         return result.Match(
-            value => CreatedAtAction(nameof(GetProductById), new { productId = value.Id }, value.ToProductResponse()),
-            errors => HandleErrors(errors));
+            value => CreatedAtAction(nameof(GetProductById), new { productId = value.Id }, value),
+            HandleErrors);
     }
 
     [Authorize(Roles = "Admin")]
@@ -73,22 +62,18 @@ public class ProductsController : ApiController
         var command = new DeleteProductCommand(productId);
         var result = await _mediator.Send(command);
 
-        return ToNoContentOrErrors(result);
+        return result.Match(value => NoContent(), HandleErrors);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductRequest request)
     {
-        var command = new UpdateProductCommand(id, request.Name, request.Quantity, request.Price,
+        var command = new UpdateProductCommand(id, request.Name, request.Price,
             request.Description, request.CategoryId);
 
         var result = await _mediator.Send(command);
 
-        return result.Match(
-            value => Ok(value.ToProductResponse()),
-            errors => HandleErrors(errors)
-        );
+        return result.Match(Ok, HandleErrors);
     }
 }
-

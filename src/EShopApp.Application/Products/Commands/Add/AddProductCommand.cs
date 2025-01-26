@@ -1,4 +1,5 @@
 using ErrorOr;
+using EShopApp.Application.Products.DTOs;
 using EShopApp.Domain.Entities;
 using MediatR;
 
@@ -9,4 +10,4 @@ public record AddProductCommand(
     int Quantity,
     decimal Price,
     string Description,
-    int CategoryId) : IRequest<ErrorOr<Product>>;
+    int CategoryId) : IRequest<ErrorOr<ProductDto>>;

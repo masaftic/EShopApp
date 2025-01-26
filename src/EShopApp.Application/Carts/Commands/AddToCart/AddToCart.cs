@@ -41,12 +41,17 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ErrorOr
         }
 
         var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId,
-                cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken);
 
         if (product == null)
-        {
             return Errors.Product.NotFound;
-        }
+        
+
+        var inventory = await _dbContext.Inventories.FirstOrDefaultAsync(i => i.ProductId == request.ProductId,
+            cancellationToken);
+
+        if (inventory is null || inventory.AvailableStock < request.Quantity)
+            return Error.Conflict(description: "Out of stock");
 
         var cartItem = userCart.AddToCart(request.ProductId, request.Quantity, product.Price);
 

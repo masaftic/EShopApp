@@ -1,15 +1,17 @@
 using ErrorOr;
 using EShopApp.Application.Common.Interfaces.Persistence;
+using EShopApp.Application.Products.DTOs;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
 using EShopApp.Domain.ValueObjects;
+using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShopApp.Application.Products.Commands.Add;
 
 
-public class AddProductCommandHandler : IRequestHandler<AddProductCommand, ErrorOr<Product>>
+public class AddProductCommandHandler : IRequestHandler<AddProductCommand, ErrorOr<ProductDto>>
 {
     private readonly IApplicationDbContext _dbContext;
 
@@ -18,7 +20,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Error
         _dbContext = dbContext;
     }
     
-    public async Task<ErrorOr<Product>> Handle(AddProductCommand command, CancellationToken cancellationToken)
+    public async Task<ErrorOr<ProductDto>> Handle(AddProductCommand command, CancellationToken cancellationToken)
     {
         var category = await _dbContext.Categories.FindAsync(command.CategoryId);
         if (category == null)
@@ -29,6 +31,6 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Error
         await _dbContext.Products.AddAsync(product, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return product;
+        return product.Adapt<ProductDto>();
     }
 }

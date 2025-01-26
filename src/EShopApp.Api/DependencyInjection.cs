@@ -9,7 +9,9 @@ public static class DependencyInjection
     {
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-        services.AddControllers(); 
+        services.AddControllers()
+            .AddJsonOptions(opt=> { opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+        
         services.AddProblemDetails(config =>
         {
             config.CustomizeProblemDetails = context =>
