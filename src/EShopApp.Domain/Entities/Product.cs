@@ -14,7 +14,7 @@ public class Product : Entity<int>
     public DateTime UpdatedAt { get; private set; }
 
     
-    public Product()
+    private Product()
     {
     }
 

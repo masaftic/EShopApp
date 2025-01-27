@@ -10,6 +10,10 @@ public class Inventory : Entity<int>
     public int ReorderLevel { get; set; }
     public int ReorderQuantity { get; set; }
 
+    private Inventory()
+    {
+    }
+
     public Inventory(int productId, int stock, int reorderQuantity, int reorderLevel)
     {
         ProductId = productId;
@@ -22,8 +26,18 @@ public class Inventory : Entity<int>
     public void Reserve(int quantity)
     {
         if (quantity > AvailableStock)
-            throw new InvalidOperationException($"Quantity {quantity} is greater than the available quantity {AvailableStock}");
-        
+            throw new InvalidOperationException(
+                $"Quantity {quantity} is greater than the available quantity {AvailableStock}");
+
         ReservedStock += quantity;
+    }
+
+    public void Release(int quantity)
+    {
+        if (quantity > ReservedStock)
+            throw new InvalidOperationException(
+                $"Quantity {quantity} is greater than the reserved quantity {ReservedStock}");
+
+        ReservedStock -= quantity;
     }
 }

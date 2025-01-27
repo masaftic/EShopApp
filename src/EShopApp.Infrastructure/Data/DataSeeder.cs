@@ -122,11 +122,12 @@ public class DataSeeder
         }
     }
 
+    // There must be Product and Inventory parameterless constructors before running this function. 
     private async Task SeedProductsAndInventoriesAsync(int count)
     {
         if (await _context.Products.AnyAsync())
             return;
-        
+
         var categoryIds = await _context.Categories.Select(c => c.Id).ToListAsync();
 
         var productFaker = new Faker<Product>()
@@ -139,13 +140,13 @@ public class DataSeeder
 
         var inventoryFaker = new Faker<Inventory>()
             .RuleFor(i => i.Stock, f => f.Random.Number(1, 100))
-            .RuleFor(i => i.ReservedStock, f => f.Random.Number(1, 10))
+            .RuleFor(i => i.ReservedStock, f => 0)
             .RuleFor(i => i.ReorderLevel, f => f.Random.Number(5, 20))
             .RuleFor(i => i.ReorderQuantity, f => f.Random.Number(5, 20));
-        
+
         var products = new List<Product>();
         var inventories = new List<Inventory>();
-        
+
         for (var i = 0; i < count; i++)
         {
             var product = productFaker.Generate();
@@ -158,8 +159,7 @@ public class DataSeeder
 
         await _context.AddRangeAsync(products);
         await _context.AddRangeAsync(inventories);
-        
+
         await _context.SaveChangesAsync();
     }
-    
 }
