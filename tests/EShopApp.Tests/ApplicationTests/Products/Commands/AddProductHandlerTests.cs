@@ -25,14 +25,20 @@ public class AddProductHandlerTests
         var command = new AddProductCommand
         (
             Name: "Test Product",
-            Quantity: 1,
             Price: 100,
             Description: "Test Description",
             CategoryId: 1
         );
 
-        _mockDbContext.Categories.FindAsync(command.CategoryId).Returns((Category)null!);
+        var productsDbSet = Substitute.For<DbSet<Product>, IQueryable<Product>>();
+        var categoriesDbSet = Substitute.For<DbSet<Category>, IQueryable<Category>>();
 
+        _mockDbContext.Categories.Returns(categoriesDbSet);
+        _mockDbContext.Products.Returns(productsDbSet);
+        
+        categoriesDbSet.FindAsync(Arg.Is<object[]>(keys => keys.Contains(command.CategoryId)), Arg.Any<CancellationToken>())
+            .Returns((Category)null);
+        
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -48,15 +54,21 @@ public class AddProductHandlerTests
         var command = new AddProductCommand
         (
             Name: "Test Product",
-            Quantity: 1,
             Price: 100,
             Description: "Test Description",
             CategoryId: 1
         );
 
         var category = new Category("Test Category");
-        _mockDbContext.Categories.FindAsync(command.CategoryId).Returns(category);
+        
+        var productsDbSet = Substitute.For<DbSet<Product>, IQueryable<Product>>();
+        var categoriesDbSet = Substitute.For<DbSet<Category>, IQueryable<Category>>();
 
+        _mockDbContext.Categories.Returns(categoriesDbSet);
+        _mockDbContext.Products.Returns(productsDbSet);
+        
+        categoriesDbSet.FindAsync(Arg.Is<object[]>(keys => keys.Contains(command.CategoryId)), Arg.Any<CancellationToken>())
+            .Returns(category);
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
