@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<DataSeeder>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddHostedService<ExpiredReservationBackgroundService>();
 
         AddPersistence(services, configuration);
         AddAuth(services, configuration);

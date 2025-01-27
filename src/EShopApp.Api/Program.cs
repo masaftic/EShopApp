@@ -5,6 +5,7 @@ using EShopApp.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 {
+    builder.Logging.AddConsole();
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddApplication();
     builder.Services.AddPresentation();
