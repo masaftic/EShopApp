@@ -45,7 +45,7 @@ public class ProductsController : ApiController
     [HttpPost]
     public async Task<IActionResult> AddProduct(AddProductRequest request)
     {
-        var command = new AddProductCommand(request.Name, request.Quantity, request.Price,
+        var command = new AddProductCommand(request.Name, request.Price,
             request.Description, request.CategoryId);
 
         var result = await _mediator.Send(command);

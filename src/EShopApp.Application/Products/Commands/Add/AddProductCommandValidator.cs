@@ -14,9 +14,6 @@ public class AddProductCommandValidator : AbstractValidator<AddProductCommand>
             .NotEmpty().WithMessage("{PropertyName} is required.")
             .MaximumLength(500).WithMessage("{PropertyName} must not exceed 500 characters.");
         
-        RuleFor(x => x.Quantity)
-            .GreaterThan(0).WithMessage("{PropertyName} must be greater than 0.");
-        
         RuleFor(x => x.Price)
             .GreaterThan(0).WithMessage("{PropertyName} must be greater than 0.");
         
