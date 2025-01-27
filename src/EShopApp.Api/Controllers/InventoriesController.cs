@@ -4,11 +4,13 @@ using EShopApp.Application.Inventories.Commands.AddInventory;
 using EShopApp.Application.Inventories.Commands.AdjustInventory;
 using EShopApp.Application.Inventories.Queries.GetInventory;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EShopApp.Api.Controllers;
 
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin")]
 public class InventoriesController : ApiController
 {
     private readonly IMediator _mediator;
