@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Stripe;
 using IdentityService = EShopApp.Infrastructure.Data.Identity.IdentityService;
+using EShopApp.Infrastructure.Payment;
 
 namespace EShopApp.Infrastructure;
 
@@ -23,7 +24,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
+        var stripeApiCredentials = configuration.GetSection(StripeApiCredentials.SectionName).Get<StripeApiCredentials>();
+
+        StripeConfiguration.ApiKey = stripeApiCredentials.SecretKey;
+
+        services.Configure<StripeApiCredentials>(configuration.GetSection(StripeApiCredentials.SectionName));
 
         AddServices(services);
         AddPersistence(services, configuration);

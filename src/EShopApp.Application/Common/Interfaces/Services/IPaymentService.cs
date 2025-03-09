@@ -7,4 +7,5 @@ namespace EShopApp.Application.Common.Interfaces.Services;
 public interface IPaymentService
 {
     public Task<ErrorOr<PaymentIntentResult>> CreatePaymentIntentAsync(PaymentIntentOptionsDto options);
+    public Task<ErrorOr<PaymentStatusResponse>> ProcessWebhookAsync(string rawJson, string Signature);
 }
