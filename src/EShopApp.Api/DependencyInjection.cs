@@ -10,8 +10,8 @@ public static class DependencyInjection
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddControllers()
-            .AddJsonOptions(opt=> { opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
-        
+            .AddJsonOptions(opt => { opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+
         services.AddProblemDetails(config =>
         {
             config.CustomizeProblemDetails = context =>
@@ -26,6 +26,15 @@ public static class DependencyInjection
             };
         });
 
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowMyClient",
+                builder => builder
+                    .WithOrigins("http://127.0.0.1:5500")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials());
+        });
 
         return services;
     }

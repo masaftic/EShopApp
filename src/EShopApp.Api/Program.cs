@@ -29,6 +29,8 @@ var app = builder.Build();
     }
 
     app.UseHttpsRedirection();
+    app.UseCors("AllowMyFront");
+
     app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();

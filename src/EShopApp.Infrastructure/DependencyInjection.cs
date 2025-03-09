@@ -14,6 +14,8 @@ using EShopApp.Infrastructure.Data.Identity;
 using EShopApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Stripe;
+using IdentityService = EShopApp.Infrastructure.Data.Identity.IdentityService;
 
 namespace EShopApp.Infrastructure;
 
@@ -21,23 +23,30 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IIdentityService, IdentityService>();
-        services.AddScoped<DataSeeder>();
-        services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
-        services.AddHostedService<ExpiredReservationBackgroundService>();
+        StripeConfiguration.ApiKey = configuration["Stripe:SecretKey"];
 
+        AddServices(services);
         AddPersistence(services, configuration);
         AddAuth(services, configuration);
 
         return services;
     }
 
+    private static void AddServices(IServiceCollection services)
+    {
+        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<DataSeeder>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IPaymentService, StripePaymentService>();
+        services.AddHttpContextAccessor();
+        services.AddHostedService<ExpiredReservationBackgroundService>();
+    }
+
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            options.UseSqlServer(configuration.GetConnectionString("DockerConnection"));
         });
 
         var identityOptions = new ApplicationIdentityOptions();

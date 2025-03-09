@@ -49,6 +49,6 @@ public class CartController : ApiController
     {
         var checkoutCommand = new CheckoutCommand();
         var result = await _mediator.Send(checkoutCommand);
-        return result.Match(Ok, HandleErrors);
+        return result.Match(Ok, HandleErrors); // payment intent result
     }
 }

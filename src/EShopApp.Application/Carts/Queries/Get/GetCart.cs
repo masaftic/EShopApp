@@ -3,6 +3,7 @@ using EShopApp.Application.Carts.DTOs;
 using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
+using EShopApp.Domain.Entities;
 using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,13 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, ErrorOr<CartDto
             .SingleOrDefaultAsync(cancellationToken);
 
         if (userCart == null)
-            return Error.NotFound("Cart.NotFound");
+        {
+            var cart = new Cart(userId);
+            await _dbContext.Carts.AddAsync(cart, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            userCart = cart.Adapt<CartDto>();
+        }
 
         return userCart;
     }

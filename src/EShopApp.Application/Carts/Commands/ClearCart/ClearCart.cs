@@ -1,6 +1,7 @@
 using ErrorOr;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
+using EShopApp.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +28,25 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, ErrorOr
             .SingleOrDefaultAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
 
         if (userCart == null)
-            return Error.NotFound("Cart.NotFound");
+            return Error.NotFound(description: "Cart not found");
+
+        var reservation = await _dbContext.Reservations
+            .Include(r => r.ReservationItems)
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == ReservationStatus.Active, cancellationToken: cancellationToken);
+
+        if (reservation != null)
+        {
+            // Release inventory reservations
+            foreach (var reservationItem in reservation.ReservationItems)
+            {
+                var inventory = await _dbContext.Inventories
+                    .FirstOrDefaultAsync(i => i.ProductId == reservationItem.ProductId, cancellationToken: cancellationToken);
+
+                inventory?.Release(reservationItem.Quantity);
+            }
+
+            _dbContext.Reservations.Remove(reservation);
+        }
 
         userCart.CartItems.Clear();
 

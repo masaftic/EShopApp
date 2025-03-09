@@ -1,5 +1,6 @@
 using EShopApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace EShopApp.Application.Common.Interfaces.Persistence;
 
@@ -15,6 +16,8 @@ public interface IApplicationDbContext
     DbSet<ReservationItem> ReservationItems { get; }
     DbSet<Inventory> Inventories { get; }
     DbSet<InventoryTransaction> InventoryTransactions { get; }
+
+    DatabaseFacade Database { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
