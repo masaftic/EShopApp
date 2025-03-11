@@ -30,7 +30,7 @@ var app = builder.Build();
 
 
     // app.UseHttpsRedirection();
-    app.UseCors("AllowMyFront");
+    app.UseCors("AllowMyClient");
 
     app.UseRouting();
     app.UseAuthentication();
