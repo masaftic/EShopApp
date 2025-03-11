@@ -13,7 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let elements = stripe.elements();
     let paymentElement;
 
-    const SERVER_URL = 'https://localhost:7065';
+    const useHttps = false;
+    const SERVER_URL = useHttps ? 'https://localhost:7065' : 'http://localhost:5555';
 
     loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -137,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: `${SERVER_URL}/payment-complete.html`,
+                return_url: `http://localhost:5500/PaymentClientSide/payment-complete.html`,
             },
         });
 

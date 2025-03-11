@@ -36,7 +36,39 @@ public class StripePaymentService : IPaymentService
 
             var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
 
-            return new PaymentIntentResult(paymentIntent.Id, paymentIntent.Status, paymentIntent.ClientSecret);
+            return new PaymentIntentResult(
+                paymentIntent.Id,
+                paymentIntent.Status,
+                paymentIntent.ClientSecret,
+                paymentIntent.Amount,
+                paymentIntent.AmountReceived,
+                paymentIntent.Currency,
+                paymentIntent.Description,
+                paymentIntent.Metadata);
+        }
+        catch (StripeException e)
+        {
+            Console.WriteLine(e);
+            return Error.Conflict(description: e.StripeError.Message);
+        }
+    }
+
+    public async Task<ErrorOr<PaymentIntentResult>> GetPaymentIntentAsync(string paymentIntentId)
+    {
+        try
+        {
+            var paymentIntentService = new PaymentIntentService();
+            var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
+
+            return new PaymentIntentResult(
+                paymentIntent.Id,
+                paymentIntent.Status,
+                paymentIntent.ClientSecret,
+                paymentIntent.Amount,
+                paymentIntent.AmountReceived,
+                paymentIntent.Currency,
+                paymentIntent.Description,
+                paymentIntent.Metadata);
         }
         catch (StripeException e)
         {
@@ -47,7 +79,7 @@ public class StripePaymentService : IPaymentService
 
     public async Task<ErrorOr<PaymentStatusResponse>> ProcessWebhookAsync(string rawJson, string Signature)
     {
-        Event stripeEvent; 
+        Event stripeEvent;
         try
         {
             stripeEvent = EventUtility.ConstructEvent(rawJson, Signature, _stripeApiCredentials.WebhookSecret);

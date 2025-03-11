@@ -42,6 +42,23 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         if (cart.CartItems.Count == 0)
             return Error.Conflict(description: "Cannot checkout on an empty cart");
 
+        if (cart.SessionExpiryDate is not null && cart.SessionExpiryDate > DateTime.UtcNow)
+        {
+            var reservation = await _dbContext.Reservations
+                           .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == ReservationStatus.Active, cancellationToken: cancellationToken);
+
+
+            if (reservation != null)
+            {
+                // Extend the reservation expiry time
+                reservation.ExpirationDate = DateTime.UtcNow.AddMinutes(10);
+                await _dbContext.SaveChangesAsync(cancellationToken);
+
+                Console.WriteLine($"Retrieved PaymentIntentId: {reservation.PaymentIntentId}");
+                return await _paymentService.GetPaymentIntentAsync(reservation.PaymentIntentId);
+            }
+        }
+
         // Update price to time of checkout
         foreach (var cartItem in cart.CartItems)
         {
@@ -106,7 +123,6 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
                 }
 
                 await _dbContext.InventoryTransactions.AddRangeAsync(inventoryTransactions, cancellationToken);
-                await _dbContext.SaveChangesAsync(cancellationToken);
 
                 var options = new PaymentIntentOptionsDto
                 {
@@ -127,7 +143,11 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
                     return paymentIntentResult;
                 }
 
+                reservation.PaymentIntentId = paymentIntentResult.Value.PaymentIntentId;
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
+
                 return paymentIntentResult;
             }
             catch (Exception ex)

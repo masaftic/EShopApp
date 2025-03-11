@@ -4,6 +4,8 @@ using EShopApp.Application.Payments.DTOs;
 using EShopApp.Domain.Events;
 using MediatR;
 
+namespace EShopApp.Application.Payments.Events;
+
 public class StripeWebhookReceivedHandler : INotificationHandler<StripeWebhookReceivedEvent>
 {
     private readonly IPaymentService _paymentService;

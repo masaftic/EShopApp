@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Complete</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Payment Complete</h1>
+    <div id="payment-result"></div>
+    <button id="back-to-shop">Back to Shop</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentIntentId = urlParams.get('payment_intent');
+            const paymentStatus = urlParams.get('redirect_status');
+
+            const paymentResultDiv = document.getElementById('payment-result');
+            if (paymentStatus === 'succeeded') {
+                paymentResultDiv.textContent = `Payment successful! Payment Intent ID: ${paymentIntentId}`;
+                paymentResultDiv.style.color = 'green';
+            } else {
+                paymentResultDiv.textContent = `Payment failed or was canceled. Payment Intent ID: ${paymentIntentId}`;
+                paymentResultDiv.style.color = 'red';
+            }
+
+            document.getElementById('back-to-shop').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

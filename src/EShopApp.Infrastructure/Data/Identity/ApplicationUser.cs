@@ -9,9 +9,10 @@ public class ApplicationUser : IdentityUser<int>
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public Address Address { get; set; }
-    
+
     public ICollection<Order> Orders { get; set; }
     public Cart Cart { get; set; }
+    public ICollection<Domain.Entities.Payment> Payments { get; set; }
 
     public User ToDomainUser()
     {
