@@ -28,8 +28,7 @@ public class IdentityService : IIdentityService
         if (applicationUser is null)
             return Errors.User.InvalidCredentials;
 
-        var user = applicationUser.ToDomainUser();
-        return user;
+        return applicationUser.User;
     }
 
     public async Task<ErrorOr<AuthenticationResult>> SignUpAsync(User user, string password)
@@ -64,6 +63,6 @@ public class IdentityService : IIdentityService
         if (applicationUser is null)
             return Errors.User.NotFound;
 
-        return applicationUser.ToDomainUser();
+        return applicationUser.User;
     }
 }

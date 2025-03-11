@@ -16,7 +16,7 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasForeignKey(oi => oi.OrderId);
         
         builder
-            .HasOne<ApplicationUser>()
+            .HasOne<User>()
             .WithMany(o => o.Orders)
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.NoAction);

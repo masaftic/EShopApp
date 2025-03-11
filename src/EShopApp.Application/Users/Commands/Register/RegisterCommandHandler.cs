@@ -23,14 +23,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
 
         var result = await _identityService.SignUpAsync(user, command.Password);
 
-        // TODO: Create an empty cart when user registers
-        // problem is user.Id is not the same as the applicationUser from the infra layer
-        // if (!result.IsError)
-        // {
-        //     var cart = new Cart(user.Id);
-        //     await _dbContext.Carts.AddAsync(cart, cancellationToken);
-        //     await _dbContext.SaveChangesAsync(cancellationToken);
-        // }
+        if (!result.IsError)
+        {
+            var cart = new Cart(user.Id);
+            await _dbContext.Carts.AddAsync(cart, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
 
         return result;
     }

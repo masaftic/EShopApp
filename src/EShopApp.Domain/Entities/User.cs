@@ -9,6 +9,9 @@ public class User
     public string LastName { get; private set; }
     public string Email { get; private set; }
     public Address Address { get; private set; }
+    public ICollection<Order> Orders { get; set; } = [];
+    public Cart Cart { get; set; }
+    public ICollection<Payment> Payments { get; set; } = [];
     
 
     private User()

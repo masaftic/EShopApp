@@ -17,7 +17,8 @@ public interface IApplicationDbContext
     DbSet<Inventory> Inventories { get; }
     DbSet<InventoryTransaction> InventoryTransactions { get; }
     DbSet<Payment> Payments { get; }
-
+    DbSet<User> DomainUsers { get; }
+    
     DatabaseFacade Database { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

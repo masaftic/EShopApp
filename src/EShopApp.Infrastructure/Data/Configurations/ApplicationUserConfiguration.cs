@@ -1,3 +1,4 @@
+using EShopApp.Domain.Entities;
 using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,11 +9,5 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 {
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
-        builder.OwnsOne(u => u.Address, address =>
-        {
-            address.Property(a => a.Street).IsRequired().HasMaxLength(200);
-            address.Property(a => a.City).IsRequired().HasMaxLength(100);
-            address.Property(a => a.Country).IsRequired().HasMaxLength(100);
-        });
     }
 }

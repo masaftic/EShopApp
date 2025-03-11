@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopApp.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250310155209_Add_PaymentIntentId_In_Reservation")]
-    partial class Add_PaymentIntentId_In_Reservation
+    [Migration("20250311234532_Domain_User_Storage")]
+    partial class Domain_User_Storage
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -242,6 +242,45 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentIntentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -338,6 +377,31 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.ToTable("ReservationItems");
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DomainUsers");
+                });
+
             modelBuilder.Entity("EShopApp.Infrastructure.Data.Identity.ApplicationUser", b =>
                 {
                     b.Property<int>("Id")
@@ -359,14 +423,6 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -397,6 +453,9 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -410,6 +469,9 @@ namespace EShopApp.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -549,7 +611,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Cart", b =>
                 {
-                    b.HasOne("EShopApp.Infrastructure.Data.Identity.ApplicationUser", null)
+                    b.HasOne("EShopApp.Domain.Entities.User", null)
                         .WithOne("Cart")
                         .HasForeignKey("EShopApp.Domain.Entities.Cart", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -599,7 +661,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("EShopApp.Infrastructure.Data.Identity.ApplicationUser", null)
+                    b.HasOne("EShopApp.Domain.Entities.User", null)
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -656,6 +718,15 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Payment", b =>
+                {
+                    b.HasOne("EShopApp.Domain.Entities.User", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.Product", b =>
                 {
                     b.HasOne("EShopApp.Domain.Entities.Category", "Category")
@@ -669,7 +740,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Reservation", b =>
                 {
-                    b.HasOne("EShopApp.Infrastructure.Data.Identity.ApplicationUser", null)
+                    b.HasOne("EShopApp.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -691,11 +762,11 @@ namespace EShopApp.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EShopApp.Infrastructure.Data.Identity.ApplicationUser", b =>
+            modelBuilder.Entity("EShopApp.Domain.Entities.User", b =>
                 {
                     b.OwnsOne("EShopApp.Domain.ValueObjects.Address", "Address", b1 =>
                         {
-                            b1.Property<int>("ApplicationUserId")
+                            b1.Property<int>("UserId")
                                 .HasColumnType("int");
 
                             b1.Property<string>("City")
@@ -713,16 +784,27 @@ namespace EShopApp.Infrastructure.Data.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("nvarchar(200)");
 
-                            b1.HasKey("ApplicationUserId");
+                            b1.HasKey("UserId");
 
-                            b1.ToTable("AspNetUsers");
+                            b1.ToTable("DomainUsers");
 
                             b1.WithOwner()
-                                .HasForeignKey("ApplicationUserId");
+                                .HasForeignKey("UserId");
                         });
 
                     b.Navigation("Address")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("EShopApp.Infrastructure.Data.Identity.ApplicationUser", b =>
+                {
+                    b.HasOne("EShopApp.Domain.Entities.User", "User")
+                        .WithOne()
+                        .HasForeignKey("EShopApp.Infrastructure.Data.Identity.ApplicationUser", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -797,12 +879,14 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("ReservationItems");
                 });
 
-            modelBuilder.Entity("EShopApp.Infrastructure.Data.Identity.ApplicationUser", b =>
+            modelBuilder.Entity("EShopApp.Domain.Entities.User", b =>
                 {
                     b.Navigation("Cart")
                         .IsRequired();
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }

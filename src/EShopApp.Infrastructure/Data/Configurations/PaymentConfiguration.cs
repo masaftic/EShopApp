@@ -1,3 +1,4 @@
+using EShopApp.Domain.Entities;
 using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,7 +10,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Domain.Entities.Pay
     public void Configure(EntityTypeBuilder<Domain.Entities.Payment> builder)
     {
         builder
-            .HasOne<ApplicationUser>()
+            .HasOne<User>()
             .WithMany(u => u.Payments)
             .HasForeignKey(p => p.UserId);
     }
