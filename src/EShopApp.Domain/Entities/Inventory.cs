@@ -10,7 +10,7 @@ public class Inventory : Entity<int>
     public int ReorderLevel { get; set; }
     public int ReorderQuantity { get; set; }
 
-    private Inventory()
+    public Inventory()
     {
     }
 
