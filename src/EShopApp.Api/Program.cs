@@ -28,7 +28,10 @@ var app = builder.Build();
         app.UseExceptionHandler("/error");
     }
 
-    app.UseHttpsRedirection();
+
+    // app.UseHttpsRedirection();
+    app.UseCors("AllowMyClient");
+
     app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();

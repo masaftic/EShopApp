@@ -17,19 +17,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Category> Categories { get; init; }
     public DbSet<Cart> Carts { get; init; }
     public DbSet<CartItem> CartItems { get; init; }
-    
     public DbSet<Order> Orders { get; init; }
     public DbSet<OrderItem> OrderItems { get; init; }
     public DbSet<Reservation> Reservations { get; init; }
     public DbSet<ReservationItem> ReservationItems { get; init; }
     public DbSet<Inventory> Inventories { get; init; }
     public DbSet<InventoryTransaction> InventoryTransactions { get; init; }
-
+    public DbSet<Domain.Entities.Payment> Payments { get; init; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        
+
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }

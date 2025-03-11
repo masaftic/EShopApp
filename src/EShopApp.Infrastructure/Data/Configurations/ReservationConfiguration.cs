@@ -18,6 +18,8 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
             .WithOne()
             .HasForeignKey(ri => ri.ReservationId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Property(o => o.PaymentIntentId).IsRequired();
     }
 }
 
