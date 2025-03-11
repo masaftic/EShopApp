@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EShopApp.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250121051939_Orders_Inventories")]
-    partial class Orders_Inventories
+    [Migration("20250310155209_Add_PaymentIntentId_In_Reservation")]
+    partial class Add_PaymentIntentId_In_Reservation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,14 +58,14 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<int>("CartId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -73,7 +73,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("CartItem");
+                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Category", b =>
@@ -104,16 +104,13 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Inventory", b =>
                 {
-                    b.Property<int>("InventoryId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InventoryId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.Property<int>("ReorderLevel")
@@ -122,23 +119,29 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<int>("ReorderQuantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("ReservedQuantity")
+                    b.Property<int>("ReservedStock")
                         .HasColumnType("int");
 
-                    b.HasKey("InventoryId");
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("Inventories");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.InventoryTransaction", b =>
                 {
-                    b.Property<int>("InventoryTransactionId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InventoryTransactionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("InventoryId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
@@ -154,7 +157,9 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.HasKey("InventoryTransactionId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId");
 
                     b.ToTable("InventoryTransactions");
                 });
@@ -177,7 +182,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PayementMethod")
+                    b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -191,7 +196,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalPrice")
+                    b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TransactionId")
@@ -234,7 +239,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItem");
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Product", b =>
@@ -251,9 +256,6 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -265,9 +267,6 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -281,17 +280,21 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Reservation", b =>
                 {
-                    b.Property<int>("ReservationId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReservationId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentIntentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -302,7 +305,9 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("ReservationId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Reservations");
                 });
@@ -326,9 +331,11 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("ReservationId");
 
-                    b.ToTable("ReservationItem");
+                    b.ToTable("ReservationItems");
                 });
 
             modelBuilder.Entity("EShopApp.Infrastructure.Data.Identity.ApplicationUser", b =>
@@ -568,6 +575,28 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Inventory", b =>
+                {
+                    b.HasOne("EShopApp.Domain.Entities.Product", "Product")
+                        .WithOne("Inventory")
+                        .HasForeignKey("EShopApp.Domain.Entities.Inventory", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EShopApp.Domain.Entities.InventoryTransaction", b =>
+                {
+                    b.HasOne("EShopApp.Domain.Entities.Inventory", "Inventory")
+                        .WithMany()
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.Order", b =>
                 {
                     b.HasOne("EShopApp.Infrastructure.Data.Identity.ApplicationUser", null)
@@ -638,8 +667,23 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("EShopApp.Infrastructure.Data.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.ReservationItem", b =>
                 {
+                    b.HasOne("EShopApp.Domain.Entities.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("EShopApp.Domain.Entities.Reservation", null)
                         .WithMany("ReservationItems")
                         .HasForeignKey("ReservationId")
@@ -740,6 +784,12 @@ namespace EShopApp.Infrastructure.Data.Migrations
             modelBuilder.Entity("EShopApp.Domain.Entities.Order", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("EShopApp.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("Inventory")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Reservation", b =>

@@ -5,25 +5,25 @@
 namespace EShopApp.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Inventory_of_product : Migration
+    public partial class Add_Payment_Storage : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Quantity",
-                table: "Products");
+                name: "PaymentMethodId",
+                table: "Payments");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "Quantity",
-                table: "Products",
-                type: "int",
+            migrationBuilder.AddColumn<string>(
+                name: "PaymentMethodId",
+                table: "Payments",
+                type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: "");
         }
     }
 }
