@@ -25,10 +25,7 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, ErrorOr
         var userId = int.Parse(_currentUserService.UserId);
         var userCart = await _dbContext.Carts
             .Include(c => c.CartItems)
-            .SingleOrDefaultAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
-
-        if (userCart == null)
-            return Error.NotFound(description: "Cart not found");
+            .SingleAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
 
         var reservation = await _dbContext.Reservations
             .Include(r => r.ReservationItems)

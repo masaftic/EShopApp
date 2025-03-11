@@ -32,7 +32,7 @@ public class AddToCartCommandHandler : IRequestHandler<UpdateCartCommand, ErrorO
         var userCart = await _dbContext.Carts
             .Where(c => c.UserId == userId)
             .Include(c => c.CartItems)
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleAsync(cancellationToken);
 
         if (userCart is null)
             return Error.NotFound(description: "Cart not found");

@@ -34,10 +34,8 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         var cart = await _dbContext.Carts
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
+            .SingleAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
 
-        if (cart is null)
-            return Error.NotFound(description: "Cart not found");
 
         if (cart.CartItems.Count == 0)
             return Error.Conflict(description: "Cannot checkout on an empty cart");

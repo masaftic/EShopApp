@@ -29,16 +29,7 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, ErrorOr<CartDto
         var userCart = await _dbContext.Carts
             .Where(c => c.UserId == userId)
             .ProjectToType<CartDto>()
-            .SingleOrDefaultAsync(cancellationToken);
-
-        if (userCart == null)
-        {
-            var cart = new Cart(userId);
-            await _dbContext.Carts.AddAsync(cart, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            userCart = cart.Adapt<CartDto>();
-        }
+            .SingleAsync(cancellationToken);
 
         return userCart;
     }
