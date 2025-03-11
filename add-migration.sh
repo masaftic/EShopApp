@@ -6,7 +6,6 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-src/EShopApp.Infrastructure/Data/Migrations
 
 MIGRATION_NAME=$1
 STARTUP_PROJECT="src/EShopApp.Api/EShopApp.Api.csproj"
@@ -17,7 +16,7 @@ MIGRATIONS_PATH="Data/Migrations"
 dotnet ef migrations add "$MIGRATION_NAME" \
     --project "$PROJECT" \
     --startup-project "$STARTUP_PROJECT" \
-    --output-dir "$MIGRATIONS_PATH"
+    --output-dir "$MIGRATIONS_PATH" --verbose
 
 # Check if migration was successful
 if [ $? -eq 0 ]; then
