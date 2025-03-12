@@ -27,47 +27,78 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         _paymentService = paymentService;
     }
 
-
     public async Task<ErrorOr<PaymentIntentResult>> Handle(CheckoutCommand request, CancellationToken cancellationToken)
     {
         var userId = int.Parse(_currentUserService.UserId);
-        var cart = await _dbContext.Carts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .SingleAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
-
+        var cart = await GetUserCartAsync(userId, cancellationToken);
 
         if (cart.CartItems.Count == 0)
             return Error.Conflict(description: "Cannot checkout on an empty cart");
 
+        // Check for existing session and reservation
         if (cart.SessionExpiryDate is not null && cart.SessionExpiryDate > DateTime.UtcNow)
         {
-            var reservation = await _dbContext.Reservations
-                           .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == ReservationStatus.Active, cancellationToken: cancellationToken);
-
-
-            if (reservation != null)
-            {
-                // Extend the reservation expiry time
-                reservation.ExpirationDate = DateTime.UtcNow.AddMinutes(10);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-
-                Console.WriteLine($"Retrieved PaymentIntentId: {reservation.PaymentIntentId}");
-                return await _paymentService.GetPaymentIntentAsync(reservation.PaymentIntentId);
-            }
+            var existingPaymentResult = await GetExistingPaymentAsync(userId, cancellationToken);
+            if (!existingPaymentResult.IsError)
+                return existingPaymentResult;
         }
 
-        // Update price to time of checkout
+        // Update cart item prices
+        UpdateCartItemPrices(cart);
+        
+        // Validate inventory
+        var productsInventories = await GetProductsInventoriesAsync(cart, cancellationToken);
+        var inventoryValidation = ValidateInventory(cart, productsInventories);
+        if (inventoryValidation.IsError)
+            return inventoryValidation.Errors;
+
+        // Process checkout with transaction
+        return await ProcessCheckoutTransactionAsync(cart, userId, productsInventories, cancellationToken);
+    }
+
+    private async Task<Cart> GetUserCartAsync(int userId, CancellationToken cancellationToken)
+    {
+        return await _dbContext.Carts
+            .Include(c => c.CartItems)
+            .ThenInclude(ci => ci.Product)
+            .SingleAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
+    }
+
+    private async Task<ErrorOr<PaymentIntentResult>> GetExistingPaymentAsync(int userId, CancellationToken cancellationToken)
+    {
+        var reservation = await _dbContext.Reservations
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == ReservationStatus.Active, 
+                                cancellationToken: cancellationToken);
+
+        if (reservation != null)
+        {
+            // Extend the reservation expiry time
+            reservation.ExpirationDate = DateTime.UtcNow.AddMinutes(10);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            
+            return await _paymentService.GetPaymentIntentAsync(reservation.PaymentIntentId);
+        }
+
+        return default;
+    }
+
+    private void UpdateCartItemPrices(Cart cart)
+    {
         foreach (var cartItem in cart.CartItems)
         {
             cartItem.UpdatePrice(cartItem.Product.Price);
         }
+    }
 
-        var productsInventories = await _dbContext.Inventories
+    private async Task<Dictionary<int, Inventory>> GetProductsInventoriesAsync(Cart cart, CancellationToken cancellationToken)
+    {
+        return await _dbContext.Inventories
             .Where(i => cart.CartItems.Select(ci => ci.ProductId).Contains(i.ProductId))
             .ToDictionaryAsync(key => key.ProductId, value => value, cancellationToken: cancellationToken);
+    }
 
-        // Validate stock
+    private ErrorOr<Success> ValidateInventory(Cart cart, Dictionary<int, Inventory> productsInventories)
+    {
         foreach (var cartItem in cart.CartItems)
         {
             if (!productsInventories.TryGetValue(cartItem.ProductId, out var inventory))
@@ -80,79 +111,93 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
                 return Error.Conflict(description: $"Insufficient stock for product {cartItem.ProductId}");
             }
         }
+        
+        return Result.Success;
+    }
 
-        using (var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken))
+    private async Task<ErrorOr<PaymentIntentResult>> ProcessCheckoutTransactionAsync(
+        Cart cart, int userId, Dictionary<int, Inventory> productsInventories, CancellationToken cancellationToken)
+    {
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        
+        try
         {
-            try
-            {
-                var sessionExpiryDate = DateTime.UtcNow.Add(Cart.DefaultSessionExpiryDuration);
-                cart.SetExpiryDate(sessionExpiryDate);
+            var sessionExpiryDate = DateTime.UtcNow.Add(Cart.DefaultSessionExpiryDuration);
+            cart.SetExpiryDate(sessionExpiryDate);
 
-                var reservation = new Reservation
-                {
-                    UserId = userId,
-                    // SessionId = Guid.NewGuid().ToString(),
-                    Status = ReservationStatus.Active,
-                    ExpirationDate = sessionExpiryDate,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    ReservationItems = cart.CartItems.Select(ci => new ReservationItem
-                    {
-                        ProductId = ci.ProductId,
-                        Quantity = ci.Quantity
-                    }).ToList()
-                };
+            var reservation = CreateReservation(userId, sessionExpiryDate, cart);
+            await _dbContext.Reservations.AddAsync(reservation, cancellationToken);
 
-                await _dbContext.Reservations.AddAsync(reservation, cancellationToken);
+            var inventoryTransactions = CreateInventoryTransactions(cart, productsInventories);
+            await _dbContext.InventoryTransactions.AddRangeAsync(inventoryTransactions, cancellationToken);
 
-                // TODO: Domain events
-
-                var inventoryTransactions = new List<InventoryTransaction>();
-
-                // Reserve products & write the inventory transactions
-                foreach (var cartItem in cart.CartItems)
-                {
-                    var inventory = productsInventories[cartItem.ProductId];
-                    inventory.Reserve(cartItem.Quantity);
-
-                    var inventoryTransaction = new InventoryTransaction(inventory.Id, cartItem.Quantity,
-                        InventoryTransactionType.Reserve, DateTime.UtcNow, "Checkout Reservation");
-                    inventoryTransactions.Add(inventoryTransaction);
-                }
-
-                await _dbContext.InventoryTransactions.AddRangeAsync(inventoryTransactions, cancellationToken);
-
-                var options = new PaymentIntentOptionsDto
-                {
-                    Amount = (long)(cart.TotalPrice * 100), // in smallest currency unit (e.g., cents for USD)
-                    Currency = "usd",
-                    Metadata = new Dictionary<string, string>
-                    {
-                        { "cart_id", cart.Id.ToString() },
-                        { "user_id", userId.ToString() }
-                    }
-                };
-
-                var paymentIntentResult = await _paymentService.CreatePaymentIntentAsync(options);
-
-                if (paymentIntentResult.IsError)
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    return paymentIntentResult;
-                }
-
-                reservation.PaymentIntentId = paymentIntentResult.Value.PaymentIntentId;
-
-                await _dbContext.SaveChangesAsync(cancellationToken);
-                await transaction.CommitAsync(cancellationToken);
-
-                return paymentIntentResult;
-            }
-            catch (Exception ex)
+            var paymentIntentResult = await CreatePaymentIntentAsync(cart, userId);
+            if (paymentIntentResult.IsError)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Error.Failure(description: ex.Message);
+                return paymentIntentResult;
             }
+
+            reservation.PaymentIntentId = paymentIntentResult.Value.PaymentIntentId;
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return paymentIntentResult;
         }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return Error.Failure(description: ex.Message);
+        }
+    }
+
+    private Reservation CreateReservation(int userId, DateTime expiryDate, Cart cart)
+    {
+        return new Reservation
+        {
+            UserId = userId,
+            Status = ReservationStatus.Active,
+            ExpirationDate = expiryDate,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            ReservationItems = cart.CartItems.Select(ci => new ReservationItem
+            {
+                ProductId = ci.ProductId,
+                Quantity = ci.Quantity
+            }).ToList()
+        };
+    }
+
+    private List<InventoryTransaction> CreateInventoryTransactions(Cart cart, Dictionary<int, Inventory> productsInventories)
+    {
+        var inventoryTransactions = new List<InventoryTransaction>();
+        
+        foreach (var cartItem in cart.CartItems)
+        {
+            var inventory = productsInventories[cartItem.ProductId];
+            inventory.Reserve(cartItem.Quantity);
+
+            var inventoryTransaction = new InventoryTransaction(inventory.Id, cartItem.Quantity,
+                InventoryTransactionType.Reserve, DateTime.UtcNow, "Checkout Reservation");
+            inventoryTransactions.Add(inventoryTransaction);
+        }
+
+        return inventoryTransactions;
+    }
+
+    private async Task<ErrorOr<PaymentIntentResult>> CreatePaymentIntentAsync(Cart cart, int userId)
+    {
+        var options = new PaymentIntentOptionsDto
+        {
+            Amount = (long)(cart.TotalPrice * 100), // in smallest currency unit (e.g., cents for USD)
+            Currency = "usd",
+            Metadata = new Dictionary<string, string>
+            {
+                { "cart_id", cart.Id.ToString() },
+                { "user_id", userId.ToString() }
+            }
+        };
+
+        return await _paymentService.CreatePaymentIntentAsync(options);
     }
 }
