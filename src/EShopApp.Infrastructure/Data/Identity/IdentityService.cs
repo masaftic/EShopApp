@@ -5,6 +5,7 @@ using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
 using EShopApp.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace EShopApp.Infrastructure.Data.Identity;
 
@@ -24,9 +25,12 @@ public class IdentityService : IIdentityService
 
     public async Task<ErrorOr<User>> GetUserByEmailAsync(string email)
     {
-        var applicationUser = await _userManager.FindByEmailAsync(email);
+        var applicationUser = await _userManager.Users
+            .Include(u => u.User)
+            .FirstOrDefaultAsync(u => u.Email == email);
+
         if (applicationUser is null)
-            return Errors.User.InvalidCredentials;
+            return Errors.User.NotFound;
 
         return applicationUser.User;
     }
@@ -36,16 +40,19 @@ public class IdentityService : IIdentityService
         var applicationUser = ApplicationUser.FromUser(user);
 
         var result = await _userManager.CreateAsync(applicationUser, password);
-        if (!result.Succeeded) 
+        if (!result.Succeeded)
             return result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
-        
+
         var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
         return new AuthenticationResult(token, expiresIn);
     }
 
     public async Task<ErrorOr<AuthenticationResult>> SignInAsync(string email, string password)
     {
-        var applicationUser = await _userManager.FindByEmailAsync(email);
+        var applicationUser = await _userManager.Users
+            .Include(u => u.User)
+            .FirstOrDefaultAsync(u => u.Email == email);
+
         if (applicationUser is null)
             return Errors.User.InvalidCredentials;
 
@@ -59,7 +66,10 @@ public class IdentityService : IIdentityService
 
     public async Task<ErrorOr<User>> GetUserByIdAsync(int userId)
     {
-        var applicationUser = await _userManager.FindByIdAsync(userId.ToString());
+        var applicationUser = await _userManager.Users
+            .Include(u => u.User)
+            .FirstOrDefaultAsync(u => u.UserId == userId);
+
         if (applicationUser is null)
             return Errors.User.NotFound;
 
