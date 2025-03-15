@@ -163,7 +163,8 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
             ReservationItems = cart.CartItems.Select(ci => new ReservationItem
             {
                 ProductId = ci.ProductId,
-                Quantity = ci.Quantity
+                Quantity = ci.Quantity,
+                UnitPrice = ci.UnitPrice
             }).ToList()
         };
     }

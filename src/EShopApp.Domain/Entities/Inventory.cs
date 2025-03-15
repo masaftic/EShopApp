@@ -23,6 +23,20 @@ public class Inventory : Entity<int>
         ReorderQuantity = reorderQuantity;
     }
 
+    public void IncreaseStock(int quantity)
+    {
+        Stock += quantity;
+    }
+
+    public void DecreaseStock(int quantity)
+    {
+        if (quantity > AvailableStock)
+            throw new InvalidOperationException(
+                $"Quantity {quantity} is greater than the available quantity {AvailableStock}");
+
+        Stock -= quantity;
+    }
+
     public void Reserve(int quantity)
     {
         if (quantity > AvailableStock)

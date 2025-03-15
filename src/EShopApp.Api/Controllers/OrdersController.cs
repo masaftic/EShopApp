@@ -1,4 +1,3 @@
-using EShopApp.Application.Orders.Commands;
 using EShopApp.Application.Orders.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +23,12 @@ public class OrdersController : ApiController
         return result.Match(Ok, HandleErrors);
     }
 
-    [HttpPost("")]
-    public async Task<IActionResult> PlaceOrder(PlaceOrderCommand command)
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMyOrders(int id)
     {
-        var result = await _mediator.Send(command);
-        return result.Match(
-            value => CreatedAtAction(nameof(GetById), new { id = value.Id }, value),
-            HandleErrors);
+        var query = new GetOrderByUser();
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
     }
 }

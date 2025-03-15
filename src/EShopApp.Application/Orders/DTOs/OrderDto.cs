@@ -9,7 +9,7 @@ public class OrderDto
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = "";
     public DateTime CreatedAt { get; set; }
-    public AddressDto ShippingAddress { get; set; } = null!;
-    public string ShippingPostalCode { get; set; } = "";
+    // public AddressDto ShippingAddress { get; set; } = null!;
+    // public string ShippingPostalCode { get; set; } = "";
     public OrderItemDto[] OrderItems { get; set; } = [];
 }

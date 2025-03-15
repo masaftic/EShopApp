@@ -45,7 +45,7 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, ErrorOr
             _dbContext.Reservations.Remove(reservation);
         }
 
-        userCart.CartItems.Clear();
+        userCart.ClearCart();
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

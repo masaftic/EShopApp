@@ -23,11 +23,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         
         builder.Property(o => o.TotalAmount).HasColumnType("decimal(18,2)");
         
-        builder.OwnsOne(o => o.ShippingAddress, address =>
-        {
-            address.Property(a => a.Street).IsRequired().HasMaxLength(200);
-            address.Property(a => a.City).IsRequired().HasMaxLength(100);
-            address.Property(a => a.Country).IsRequired().HasMaxLength(100);
-        });
+        // builder.OwnsOne(o => o.ShippingAddress, address =>
+        // {
+        //     address.Property(a => a.Street).IsRequired().HasMaxLength(200);
+        //     address.Property(a => a.City).IsRequired().HasMaxLength(100);
+        //     address.Property(a => a.Country).IsRequired().HasMaxLength(100);
+        // });
     }
 }

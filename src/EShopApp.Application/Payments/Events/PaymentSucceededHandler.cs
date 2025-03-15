@@ -1,6 +1,7 @@
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Domain.Entities;
+using EShopApp.Domain.Enums;
 using EShopApp.Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,9 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
         _logger.LogInformation("Payment Succeeded: {PaymentIntentId}", notification.PaymentIntentId);
 
         var reservation = await _dbContext.Reservations
-    .FirstOrDefaultAsync(r => r.PaymentIntentId == notification.PaymentIntentId, cancellationToken);
+            .Include(r => r.ReservationItems)
+            .FirstOrDefaultAsync(r => r.PaymentIntentId == notification.PaymentIntentId, cancellationToken);
+    
 
         if (reservation is null)
         {
@@ -46,24 +49,87 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
 
             throw new Exception($"Could not get paymentIntent for {notification.PaymentIntentId}");
         }
-        
+
         var paymentIntent = paymentIntentResult.Value;
 
-        var payment = new Payment
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+        try
         {
-            UserId = reservation.UserId,
-            // OrderId = orderId,
-            PaymentIntentId = paymentIntent.PaymentIntentId,
-            Amount = paymentIntent.AmountReceived / 100, // Convert from cents
-            Currency = paymentIntent.Currency,
-            Status = "succeeded",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+            var userCart = await _dbContext.Carts
+                .Include(c => c.CartItems)
+                .FirstAsync(c => c.UserId == reservation.UserId, cancellationToken);
+            
+            userCart.ClearCart();
+            _dbContext.Carts.Update(userCart);
 
-        await _dbContext.Payments.AddAsync(payment);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+            var payment = new Payment
+            {
+                UserId = reservation.UserId,
+                PaymentIntentId = paymentIntent.PaymentIntentId,
+                Amount = paymentIntent.AmountReceived / 100, // Convert from cents
+                Currency = paymentIntent.Currency,
+                Status = "succeeded",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
-        // TODO: Update order in database (set status to Paid)
+            await _dbContext.Payments.AddAsync(payment, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            var order = new Order
+            {
+                UserId = reservation.UserId,
+                ReservationId = reservation.Id,
+                PaymentId = payment.Id,
+                OrderNumber = $"ORD-{DateTime.UtcNow.Ticks}",
+                TotalAmount = payment.Amount,
+                Status = OrderStatus.Placed,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                OrderItems = reservation.ReservationItems.Select(ri => new OrderItem
+                {
+                    ProductId = ri.ProductId,
+                    Quantity = ri.Quantity,
+                    UnitPrice = ri.UnitPrice
+                }).ToList(),
+            };
+
+            var productIds = reservation.ReservationItems.Select(ri => ri.ProductId).ToList();
+            var inventories = await _dbContext.Inventories
+                .Where(i => productIds.Contains(i.ProductId))
+                .ToDictionaryAsync(i => i.ProductId, i => i, cancellationToken);
+
+            var inventoryTransactions = new List<InventoryTransaction>();
+            foreach (var ri in reservation.ReservationItems)
+            {
+                var inventory = inventories[ri.ProductId];
+                inventory.DecreaseStock(ri.Quantity);
+
+                inventoryTransactions.Add(new InventoryTransaction
+                {
+                    InventoryId = inventory.Id,
+                    Quantity = -ri.Quantity,
+                    TransactionType = InventoryTransactionType.Outbound,
+                    Timestamp = DateTime.UtcNow,
+                    Reason = "Order Placed"
+                });
+            }
+
+            _dbContext.InventoryTransactions.AddRange(inventoryTransactions);
+
+            await _dbContext.Orders.AddAsync(order, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+
+            _logger.LogInformation("Order placed successfully for PaymentIntentId: {PaymentIntentId}, With OrderId: {OrderId}", notification.PaymentIntentId, order.Id);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+
+        // TODO: Publish OrderPlacedEvent
     }
 }

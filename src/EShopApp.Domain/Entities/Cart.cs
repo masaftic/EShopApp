@@ -37,4 +37,10 @@ public class Cart : Entity<int>
         CartItems.Add(cartItem);
         return cartItem;
     }
+
+    public void ClearCart()
+    {
+        CartItems.Clear();
+        SessionExpiryDate = null;
+    }
 }
