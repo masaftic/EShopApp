@@ -30,7 +30,7 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
     public async Task<ErrorOr<PaymentIntentResult>> Handle(CheckoutCommand request, CancellationToken cancellationToken)
     {
         var userId = int.Parse(_currentUserService.UserId);
-        var cart = await GetUserCartAsync(userId, cancellationToken);
+        var cart = await GetUserCartWithProductsAndInventoriesAsync(userId, cancellationToken);
 
         if (cart.CartItems.Count == 0)
             return Error.Conflict(description: "Cannot checkout on an empty cart");
@@ -45,9 +45,9 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
 
         // Update cart item prices
         UpdateCartItemPrices(cart);
-        
+
         // Validate inventory
-        var productsInventories = await GetProductsInventoriesAsync(cart, cancellationToken);
+        var productsInventories = GetProductsInventoriesAsync(cart, cancellationToken);
         var inventoryValidation = ValidateInventory(cart, productsInventories);
         if (inventoryValidation.IsError)
             return inventoryValidation.Errors;
@@ -56,18 +56,19 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         return await ProcessCheckoutTransactionAsync(cart, userId, productsInventories, cancellationToken);
     }
 
-    private async Task<Cart> GetUserCartAsync(int userId, CancellationToken cancellationToken)
+    private async Task<Cart> GetUserCartWithProductsAndInventoriesAsync(int userId, CancellationToken cancellationToken)
     {
         return await _dbContext.Carts
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
+            .ThenInclude(p => p.Inventory)
             .SingleAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
     }
 
     private async Task<ErrorOr<PaymentIntentResult>> GetExistingPaymentAsync(int userId, CancellationToken cancellationToken)
     {
         var reservation = await _dbContext.Reservations
-            .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == ReservationStatus.Active, 
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.Status == ReservationStatus.Active,
                                 cancellationToken: cancellationToken);
 
         if (reservation != null)
@@ -75,7 +76,7 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
             // Extend the reservation expiry time
             reservation.ExpirationDate = DateTime.UtcNow.AddMinutes(10);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            
+
             return await _paymentService.GetPaymentIntentAsync(reservation.PaymentIntentId);
         }
 
@@ -90,11 +91,9 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         }
     }
 
-    private async Task<Dictionary<int, Inventory>> GetProductsInventoriesAsync(Cart cart, CancellationToken cancellationToken)
+    private Dictionary<int, Inventory> GetProductsInventoriesAsync(Cart cart, CancellationToken cancellationToken)
     {
-        return await _dbContext.Inventories
-            .Where(i => cart.CartItems.Select(ci => ci.ProductId).Contains(i.ProductId))
-            .ToDictionaryAsync(key => key.ProductId, value => value, cancellationToken: cancellationToken);
+        return cart.CartItems.ToDictionary(key => key.ProductId, value => value.Product.Inventory);
     }
 
     private ErrorOr<Success> ValidateInventory(Cart cart, Dictionary<int, Inventory> productsInventories)
@@ -111,7 +110,7 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
                 return Error.Conflict(description: $"Insufficient stock for product {cartItem.ProductId}");
             }
         }
-        
+
         return Result.Success;
     }
 
@@ -119,7 +118,7 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         Cart cart, int userId, Dictionary<int, Inventory> productsInventories, CancellationToken cancellationToken)
     {
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-        
+
         try
         {
             var sessionExpiryDate = DateTime.UtcNow.Add(Cart.DefaultSessionExpiryDuration);
@@ -172,7 +171,7 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
     private List<InventoryTransaction> CreateInventoryTransactions(Cart cart, Dictionary<int, Inventory> productsInventories)
     {
         var inventoryTransactions = new List<InventoryTransaction>();
-        
+
         foreach (var cartItem in cart.CartItems)
         {
             var inventory = productsInventories[cartItem.ProductId];
