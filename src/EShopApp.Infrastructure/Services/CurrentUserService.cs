@@ -13,5 +13,5 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public string? UserId => _httpContextAccessor?.HttpContext?.User?.Claims?.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+    public string UserId => _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 }
