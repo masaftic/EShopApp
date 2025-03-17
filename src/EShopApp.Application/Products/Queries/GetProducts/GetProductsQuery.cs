@@ -10,6 +10,8 @@ public record GetProductsQuery(
     int? CategoryId,
     decimal? MinPrice,
     decimal? MaxPrice,
+    string SortBy,
+    string SortOrder,
     int PageNumber,
     int PageSize
 ) : IRequest<ErrorOr<PaginatedList<ProductDto>>>;

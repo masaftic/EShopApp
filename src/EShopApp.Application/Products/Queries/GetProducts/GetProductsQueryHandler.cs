@@ -54,6 +54,23 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ErrorOr
         if (request.MaxPrice is not null)
             query = query.Where(p => p.Price <= request.MaxPrice);
 
+        query = request.SortBy switch
+        {
+            "name" => request.SortOrder switch
+            {
+                "asc" => query.OrderBy(p => p.Name),
+                "desc" => query.OrderByDescending(p => p.Name),
+                _ => query
+            },
+            "price" => request.SortOrder switch
+            {
+                "asc" => query.OrderBy(p => p.Price),
+                "desc" => query.OrderByDescending(p => p.Price),
+                _ => query
+            },
+            _ => query
+        };
+
         query = query
             .Skip(request.PageSize * (request.PageNumber - 1))
             .Take(request.PageSize);

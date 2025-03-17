@@ -2,8 +2,9 @@ using EShopApp.Api.Models.Requests;
 using EShopApp.Application.Products.Commands.Add;
 using EShopApp.Application.Products.Commands.Delete;
 using EShopApp.Application.Products.Commands.Update;
-using EShopApp.Application.Products.Queries.GetProduct;
+using EShopApp.Application.Products.Queries.GetProductById;
 using EShopApp.Application.Products.Queries.GetProducts;
+using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,9 +24,7 @@ public class ProductsController : ApiController
     [HttpGet]
     public async Task<IActionResult> GetProducts([FromQuery] GetProductsRequest request)
     {
-        var query = new GetProductsQuery(request.CategoryId, request.MinPrice, request.MaxPrice,
-            request.PageNumber,
-            request.PageSize);
+        var query = request.Adapt<GetProductsQuery>();
 
         var result = await _mediator.Send(query);
 
@@ -45,8 +44,7 @@ public class ProductsController : ApiController
     [HttpPost]
     public async Task<IActionResult> AddProduct(AddProductRequest request)
     {
-        var command = new AddProductCommand(request.Name, request.Price,
-            request.Description, request.CategoryId);
+        var command = request.Adapt<AddProductCommand>();
 
         var result = await _mediator.Send(command);
 

@@ -6,6 +6,8 @@ public class GetProductsRequest
     public string? Path { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }
+    public string SortBy { get; set; } = "name";
+    public string SortOrder { get; set; } = "asc";
     public int PageSize { get; set; } = 10;
     public int PageNumber { get; set; } = 1;
 }
