@@ -18,6 +18,15 @@ public class User
     {
     }
 
+    public User(int id, string firstName, string lastName, string email, Address address)
+    {
+        Id = id;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        Address = address;
+    }
+
     public User(string firstName, string lastName, string email, Address address)
     {
         FirstName = firstName;

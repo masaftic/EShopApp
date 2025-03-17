@@ -18,6 +18,18 @@ public class Product : Entity<int>
     {
     }
 
+    public Product(int id, string name, decimal price, string description, int categoryId, Category category)
+    {
+        Id = id;
+        Name = name;
+        Price = price;
+        Description = description;
+        CategoryId = categoryId;
+        Category = category;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public Product(string name, decimal price, string description, int categoryId)
     {
         Name = name;

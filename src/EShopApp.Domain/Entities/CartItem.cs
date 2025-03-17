@@ -22,13 +22,16 @@ public class CartItem : Entity<int>
     {
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be greater than 0.");
+        if (unitPrice <= 0)
+            throw new ArgumentException("Price must be greater than 0.");
+        
 
         CartId = cartId;
         ProductId = productId;
         Quantity = quantity;
         UnitPrice = unitPrice;
     }
-    
+
     public void UpdateItem(int quantity, decimal price)
     {
         Quantity = quantity;
@@ -37,8 +40,23 @@ public class CartItem : Entity<int>
 
     public void AddQuantity(int quantity)
     {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than 0.");
         Quantity += quantity;
     }
 
-    public void UpdatePrice(decimal price) => UnitPrice = price;
+    public void UpdatePrice(decimal price)
+    {
+        if (price <= 0)
+            throw new ArgumentException("Price must be greater than 0.");
+        UnitPrice = price;
+    }
+
+    public void SetQuantity(int quantity)
+    {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than 0.");
+
+        Quantity = quantity;
+    }
 }

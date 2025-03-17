@@ -30,10 +30,11 @@ public class Inventory : Entity<int>
 
     public void DecreaseStock(int quantity)
     {
-        if (quantity > AvailableStock)
+        if (quantity > Stock)
             throw new InvalidOperationException(
-                $"Quantity {quantity} is greater than the available quantity {AvailableStock}");
+                $"Quantity {quantity} is greater than the current stock {Stock}");
 
+        ReservedStock -= quantity;
         Stock -= quantity;
     }
 

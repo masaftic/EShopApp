@@ -7,6 +7,13 @@ public class Category : Entity<int>
     public string Path { get; private set; } = string.Empty; // e.g., "/1/2/4" for "Laptops"
     public DateTime CreatedAt { get; private set; }
 
+    public Category(int id, string name)
+    {
+        Id = id;
+        Name = name;
+        CreatedAt = DateTime.UtcNow;
+    }
+
     public Category(string name)
     {
         Name = name;

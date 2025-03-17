@@ -1,21 +1,17 @@
-using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Products.Commands.Add;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
-using Microsoft.EntityFrameworkCore;
-using NSubstitute;
+using EShopApp.Tests.Testing;
 
 namespace EShopApp.Tests.ApplicationTests.Products.Commands;
 
-public class AddProductHandlerTests
+public class AddProductHandlerTests : TestBase
 {
-    private readonly IApplicationDbContext _mockDbContext;
     private readonly AddProductCommandHandler _handler;
 
     public AddProductHandlerTests()
     {
-        _mockDbContext = Substitute.For<IApplicationDbContext>();
-        _handler = new AddProductCommandHandler(_mockDbContext);
+        _handler = new AddProductCommandHandler(DbContext);
     }
 
     [Fact]
@@ -30,15 +26,6 @@ public class AddProductHandlerTests
             CategoryId: 1
         );
 
-        var productsDbSet = Substitute.For<DbSet<Product>, IQueryable<Product>>();
-        var categoriesDbSet = Substitute.For<DbSet<Category>, IQueryable<Category>>();
-
-        _mockDbContext.Categories.Returns(categoriesDbSet);
-        _mockDbContext.Products.Returns(productsDbSet);
-        
-        categoriesDbSet.FindAsync(Arg.Is<object[]>(keys => keys.Contains(command.CategoryId)), Arg.Any<CancellationToken>())
-            .Returns((Category)null);
-        
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -51,28 +38,21 @@ public class AddProductHandlerTests
     public async Task Handle_ShouldAddProduct_WhenCategoryExists()
     {
         // Arrange
+        var category = new Category("Test Category");
+        await DbContext.Categories.AddAsync(category);
+        await DbContext.SaveChangesAsync();
+
         var command = new AddProductCommand
         (
             Name: "Test Product",
             Price: 100,
             Description: "Test Description",
-            CategoryId: 1
+            CategoryId: category.Id
         );
 
-        var category = new Category("Test Category");
-        
-        var productsDbSet = Substitute.For<DbSet<Product>, IQueryable<Product>>();
-        var categoriesDbSet = Substitute.For<DbSet<Category>, IQueryable<Category>>();
-
-        _mockDbContext.Categories.Returns(categoriesDbSet);
-        _mockDbContext.Products.Returns(productsDbSet);
-        
-        categoriesDbSet.FindAsync(Arg.Is<object[]>(keys => keys.Contains(command.CategoryId)), Arg.Any<CancellationToken>())
-            .Returns(category);
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
-  
         // Assert
         Assert.False(result.IsError);
         Assert.NotNull(result.Value);
@@ -81,7 +61,8 @@ public class AddProductHandlerTests
         Assert.Equal(command.Description, result.Value.Description);
         Assert.Equal(command.CategoryId, result.Value.CategoryId);
 
-        await _mockDbContext.Products.Received(1).AddAsync(Arg.Is<Product>(p => p.Name == command.Name), Arg.Any<CancellationToken>());
-        await _mockDbContext.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        var savedProduct = await DbContext.Products.FindAsync(result.Value.Id);
+        Assert.NotNull(savedProduct);
+        Assert.Equal(command.Name, savedProduct.Name);
     }
 }
