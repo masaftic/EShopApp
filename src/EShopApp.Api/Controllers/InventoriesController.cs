@@ -2,6 +2,7 @@ using ErrorOr;
 using EShopApp.Api.Models.Requests;
 using EShopApp.Application.Inventories.Commands.AddInventory;
 using EShopApp.Application.Inventories.Commands.AdjustInventory;
+using EShopApp.Application.Inventories.Commands.UpdateInventory;
 using EShopApp.Application.Inventories.Queries.GetInventory;
 using EShopApp.Application.Inventories.Queries.GetLowStocksInventories;
 using MediatR;

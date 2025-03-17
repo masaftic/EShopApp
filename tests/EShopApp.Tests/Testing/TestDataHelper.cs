@@ -25,8 +25,8 @@ public static class TestDataHelper
         await context.Categories.AddAsync(category);
         await context.SaveChangesAsync();
 
-        var product = new Product(productId, "Test Product", price, "Description", category.Id, category);
-        var inventory = new Inventory(productId, stockQuantity, 100, 1);
+        var product = new Product(productId, "Test Product", price, "Description", category.Id);
+        var inventory = new Inventory(productId, product, stockQuantity, 100, 1);
         product.Inventory = inventory;
         
         await context.Products.AddAsync(product);

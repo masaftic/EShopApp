@@ -6,7 +6,13 @@ using EShopApp.Domain.Errors;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Application.Inventories.Commands.AddInventory;
+namespace EShopApp.Application.Inventories.Commands.UpdateInventory;
+
+public record UpdateInventoryCommand(
+    int InventoryId,
+    int ProductId,
+    int ReorderLevel,
+    int ReorderQuantity) : IRequest<ErrorOr<Success>>;
 
 
 public class UpdateInventoryHandler : IRequestHandler<UpdateInventoryCommand, ErrorOr<Success>>
@@ -22,7 +28,7 @@ public class UpdateInventoryHandler : IRequestHandler<UpdateInventoryCommand, Er
     {
         var inventory = await _dbContext.Inventories.FindAsync([request.InventoryId], cancellationToken);
         if (inventory is null)
-            return Error.NotFound(description: "Inventory not found");
+            return Errors.Inventory.NotFound(request.InventoryId);
         
         var product = await _dbContext.Products.FindAsync([request.ProductId], cancellationToken);
         if (product is null)

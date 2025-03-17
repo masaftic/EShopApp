@@ -27,7 +27,7 @@ public class GetInventoryByIdHandler : IRequestHandler<GetInventoryByIdQuery, Er
             .FirstOrDefaultAsync(cancellationToken);
         
         if (inventory is null)
-            return Error.NotFound(description: "Inventory not found");
+            return Errors.Inventory.NotFound(request.Id);
 
         return inventory;
     }
