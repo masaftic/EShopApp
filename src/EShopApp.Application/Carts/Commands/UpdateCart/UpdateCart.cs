@@ -11,7 +11,10 @@ using Microsoft.EntityFrameworkCore;
 namespace EShopApp.Application.Carts.Commands.UpdateCart;
 
 
-public record UpdateCartCommand(int ProductId, int Quantity) : IRequest<ErrorOr<CartItemDto>>;
+public record UpdateCartCommand(
+    int ProductId, 
+    // Quantity to be set not incremented
+    int Quantity) : IRequest<ErrorOr<CartItemDto>>;
 
 public class AddToCartCommandHandler : IRequestHandler<UpdateCartCommand, ErrorOr<CartItemDto>>
 {
@@ -37,20 +40,19 @@ public class AddToCartCommandHandler : IRequestHandler<UpdateCartCommand, ErrorO
         if (userCart is null)
             return Error.NotFound(description: "Cart not found");
 
-
-        var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId,
-            cancellationToken: cancellationToken);
+        var product = await _dbContext.Products
+            .Include(p => p.Inventory)
+            .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken: cancellationToken);
 
         if (product is null)
             return Errors.Product.NotFound;
-
 
         var cartItem = userCart.CartItems.FirstOrDefault(ci => ci.ProductId == request.ProductId);
         if (cartItem is null)
             return Error.NotFound(description: $"Cart item with product id {request.ProductId} not found");
 
-        // TODO: Stocks ?!
-        cartItem.UpdateItem(request.Quantity, product.Price);
+        cartItem.SetQuantity(request.Quantity);
+        cartItem.UpdatePrice(product.Price);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 

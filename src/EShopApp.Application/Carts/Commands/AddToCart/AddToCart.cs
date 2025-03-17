@@ -34,21 +34,19 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ErrorOr
             .Include(c => c.CartItems)
             .SingleAsync(cancellationToken);
 
-
-        var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId,
-            cancellationToken: cancellationToken);
+        var product = await _dbContext.Products
+            .Include(p => p.Inventory)
+            .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken: cancellationToken);
 
         if (product == null)
             return Errors.Product.NotFound;
-        
 
-        var inventory = await _dbContext.Inventories.FirstOrDefaultAsync(i => i.ProductId == request.ProductId,
-            cancellationToken);
-
-        if (inventory is null || inventory.AvailableStock < request.Quantity)
+        if (product.Inventory is null || product.Inventory.AvailableStock < request.Quantity)
             return Error.Conflict(description: "Out of stock");
 
         var cartItem = userCart.AddToCart(request.ProductId, request.Quantity, product.Price);
+        if (cartItem.Quantity > product.Inventory.AvailableStock)
+            return Error.Conflict(description: "Not enough stock");
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
