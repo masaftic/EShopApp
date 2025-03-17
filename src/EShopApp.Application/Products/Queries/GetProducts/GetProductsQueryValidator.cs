@@ -21,6 +21,14 @@ public class GetProductsQueryValidator : AbstractValidator<GetProductsQuery>
         RuleFor(x => new { x.MinPrice, x.MaxPrice })
             .Must(x => !x.MinPrice.HasValue || !x.MaxPrice.HasValue || x.MinPrice <= x.MaxPrice)
             .WithMessage("MinPrice cannot be greater than MaxPrice.");
+        
+        RuleFor(x => x.SortBy)
+            .Must(x => string.IsNullOrEmpty(x) || x == "price" || x == "name")
+            .WithMessage("SortBy is optional or can be 'price' or 'name'.");
+        
+        RuleFor(x => x.SortOrder)
+            .Must(x => string.IsNullOrEmpty(x) || x == "asc" || x == "desc")
+            .WithMessage("SortOrder is optional or can be 'asc' or 'desc'.");
 
         RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1)
