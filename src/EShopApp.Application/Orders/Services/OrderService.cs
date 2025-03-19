@@ -14,25 +14,13 @@ public class OrderService : IOrderService
         _dbContext = dbContext;
     }
 
-    public async Task<Order> PlaceOrderAsync(Reservation reservation, Payment payment, CancellationToken cancellationToken)
+    public async Task<Order> PlaceOrderAsync(int userId, Reservation reservation, Payment payment, CancellationToken cancellationToken)
     {
-        var order = new Order
-        {
-            UserId = reservation.UserId,
-            ReservationId = reservation.Id,
-            PaymentId = payment.Id,
-            OrderNumber = $"ORD-{DateTime.UtcNow.Ticks}",
-            TotalAmount = payment.Amount,
-            Status = OrderStatus.Placed,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            OrderItems = reservation.ReservationItems.Select(ri => new OrderItem
-            {
-                ProductId = ri.ProductId,
-                Quantity = ri.Quantity,
-                UnitPrice = ri.UnitPrice
-            }).ToList(),
-        };
+        var order = new Order(userId, reservation.Id, payment.Id, payment.Amount);
+
+        var items = reservation.ReservationItems.Select(ri => (ri.ProductId, ri.Quantity, ri.UnitPrice));
+
+        order.AddItems(items);
 
         var productIds = reservation.ReservationItems.Select(ri => ri.ProductId).ToList();
         var inventories = await _dbContext.Inventories

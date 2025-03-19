@@ -3,7 +3,6 @@ using EShopApp.Application.Carts.DTOs;
 using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.Payments.Commands.CreatePayment;
 using EShopApp.Application.Payments.DTOs;
 using EShopApp.Domain.Entities;
 using Mapster;
@@ -61,7 +60,7 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         return await _dbContext.Carts
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
-            .ThenInclude(p => p.Inventory)
+            .ThenInclude(p => p!.Inventory)
             .SingleAsync(c => c.UserId == userId, cancellationToken: cancellationToken);
     }
 
@@ -87,13 +86,13 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
     {
         foreach (var cartItem in cart.CartItems)
         {
-            cartItem.UpdatePrice(cartItem.Product.Price);
+            cartItem.UpdatePrice(cartItem.Product!.Price);
         }
     }
 
     private Dictionary<int, Inventory> GetProductsInventoriesAsync(Cart cart, CancellationToken cancellationToken)
     {
-        return cart.CartItems.ToDictionary(key => key.ProductId, value => value.Product.Inventory);
+        return cart.CartItems.ToDictionary(key => key.ProductId, value => value.Product!.Inventory);
     }
 
     private ErrorOr<Success> ValidateInventory(Cart cart, Dictionary<int, Inventory> productsInventories)
@@ -124,9 +123,6 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
             var sessionExpiryDate = DateTime.UtcNow.Add(Cart.DefaultSessionExpiryDuration);
             cart.SetExpiryDate(sessionExpiryDate);
 
-            var reservation = CreateReservation(userId, sessionExpiryDate, cart);
-            await _dbContext.Reservations.AddAsync(reservation, cancellationToken);
-
             var inventoryTransactions = CreateInventoryTransactions(cart, productsInventories);
             await _dbContext.InventoryTransactions.AddRangeAsync(inventoryTransactions, cancellationToken);
 
@@ -137,7 +133,10 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
                 return paymentIntentResult;
             }
 
-            reservation.PaymentIntentId = paymentIntentResult.Value.PaymentIntentId;
+            var reservation = CreateReservation(userId, paymentIntentResult.Value.PaymentIntentId, cart);
+
+            await _dbContext.Reservations.AddAsync(reservation, cancellationToken);
+
             await _dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
@@ -150,22 +149,12 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
         }
     }
 
-    private Reservation CreateReservation(int userId, DateTime expiryDate, Cart cart)
+    private Reservation CreateReservation(int userId, string paymentIntentId, Cart cart)
     {
-        return new Reservation
-        {
-            UserId = userId,
-            Status = ReservationStatus.Active,
-            ExpirationDate = expiryDate,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            ReservationItems = cart.CartItems.Select(ci => new ReservationItem
-            {
-                ProductId = ci.ProductId,
-                Quantity = ci.Quantity,
-                UnitPrice = ci.UnitPrice
-            }).ToList()
-        };
+        var reservation = new Reservation(userId, paymentIntentId);
+        var items = cart.CartItems.Select(ci => (ci.ProductId, ci.Quantity, ci.UnitPrice));
+        reservation.AddItems(items);
+        return reservation;
     }
 
     private List<InventoryTransaction> CreateInventoryTransactions(Cart cart, Dictionary<int, Inventory> productsInventories)

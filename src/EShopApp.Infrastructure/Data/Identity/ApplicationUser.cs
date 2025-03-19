@@ -7,18 +7,16 @@ namespace EShopApp.Infrastructure.Data.Identity;
 public class ApplicationUser : IdentityUser<int>
 {
     public int UserId { get; set; }
-    public User User { get; set; }
+    public User User { get; set; } = null!;
 
-    public static ApplicationUser FromUser(User user)
+    private ApplicationUser() // ef core
     {
-        var applicationUser = new ApplicationUser
-        {
-            UserId = user.Id,
-            User = user,
-            UserName = user.Email,
-            Email = user.Email
-        };
+    }
 
-        return applicationUser;
+    public ApplicationUser(User user)
+    {
+        User = user;
+        UserName = user.Email;
+        Email = user.Email;
     }
 }

@@ -16,7 +16,7 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         
         // Enforce one-to-one relationship
         builder
-            .HasOne<User>() // Cart belongs to one User
+            .HasOne(c => c.User) // Cart belongs to one User
             .WithOne(u => u.Cart) // User has one Cart
             .HasForeignKey<Cart>(c => c.UserId) // ForeignKey is UserId
             .OnDelete(DeleteBehavior.Cascade); // Cascade delete if User is deleted

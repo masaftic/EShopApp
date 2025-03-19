@@ -17,5 +17,10 @@ public class CategoriesConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(p => p.Path)
             .HasMaxLength(255)
             .IsRequired();
+        
+        builder.HasOne(p => p.Parent)
+            .WithMany()
+            .HasForeignKey(p => p.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

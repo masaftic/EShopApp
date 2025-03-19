@@ -2,19 +2,19 @@ using EShopApp.Application.Carts.Commands.AddToCart;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Domain.Errors;
 using EShopApp.Tests.Testing;
-using NSubstitute;
+using Moq;
 
-namespace EShopApp.Tests.ApplicationTests.Carts;
+namespace EShopApp.Tests.Application.Carts;
 
 public class AddToCartTests : TestBase
 {
-    private readonly ICurrentUserService _mockCurrentUserService;
+    private readonly Mock<ICurrentUserService> _mockCurrentUserService;
     private readonly AddToCartCommandHandler _handler;
 
     public AddToCartTests()
     {
-        _mockCurrentUserService = Substitute.For<ICurrentUserService>();
-        _handler = new AddToCartCommandHandler(_mockCurrentUserService, DbContext);
+        _mockCurrentUserService = new Mock<ICurrentUserService>();
+        _handler = new AddToCartCommandHandler(_mockCurrentUserService.Object, DbContext);
     }
 
     [Fact]
@@ -24,11 +24,11 @@ public class AddToCartTests : TestBase
         var userId = 1;
         var quantity = 2;
         
-        await TestDataHelper.CreateTestUser(DbContext, userId);
+        var user = await TestDataHelper.CreateTestUser(DbContext);
         var (product, _) = await TestDataHelper.CreateTestProduct(DbContext, stockQuantity: 5);
-        await TestDataHelper.CreateTestCart(DbContext, userId);
+        await TestDataHelper.CreateTestCart(DbContext, user.Id);
         
-        _mockCurrentUserService.UserId.Returns(userId.ToString());
+        _mockCurrentUserService.Setup(x => x.UserId).Returns(userId.ToString());
 
         // Act
         var result = await _handler.Handle(
@@ -46,10 +46,9 @@ public class AddToCartTests : TestBase
     public async Task Handle_ShouldReturnError_WhenProductNotFound()
     {
         // Arrange
-        var userId = 1;
-        await TestDataHelper.CreateTestUser(DbContext, userId);
-        await TestDataHelper.CreateTestCart(DbContext, userId);
-        _mockCurrentUserService.UserId.Returns(userId.ToString());
+        var user = await TestDataHelper.CreateTestUser(DbContext);
+        await TestDataHelper.CreateTestCart(DbContext, user.Id);
+        _mockCurrentUserService.Setup(x => x.UserId).Returns(user.Id.ToString());
 
         // Act
         var result = await _handler.Handle(
@@ -65,11 +64,10 @@ public class AddToCartTests : TestBase
     public async Task Handle_ShouldReturnError_WhenInsufficientStock()
     {
         // Arrange
-        var userId = 1;
-        await TestDataHelper.CreateTestUser(DbContext, userId);
+        var user = await TestDataHelper.CreateTestUser(DbContext);
         var (product, _) = await TestDataHelper.CreateTestProduct(DbContext, stockQuantity: 5);
-        await TestDataHelper.CreateTestCart(DbContext, userId);
-        _mockCurrentUserService.UserId.Returns(userId.ToString());
+        await TestDataHelper.CreateTestCart(DbContext, user.Id);
+        _mockCurrentUserService.Setup(x => x.UserId).Returns(user.Id.ToString());
 
         // Act
         var result = await _handler.Handle(

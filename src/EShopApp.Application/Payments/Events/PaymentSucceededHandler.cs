@@ -55,6 +55,8 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
         {
+            var userId = reservation.UserId;
+
             var userCart = await _dbContext.Carts
                 .Include(c => c.CartItems)
                 .FirstAsync(c => c.UserId == reservation.UserId, cancellationToken);
@@ -64,7 +66,7 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
 
             var payment = new Payment
             {
-                UserId = reservation.UserId,
+                UserId = userId,
                 PaymentIntentId = paymentIntent.PaymentIntentId,
                 Amount = paymentIntent.AmountReceived / 100, // Convert from cents
                 Currency = paymentIntent.Currency,
@@ -76,7 +78,7 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
             await _dbContext.Payments.AddAsync(payment, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            var order = await _orderService.PlaceOrderAsync(reservation, payment, cancellationToken);
+            var order = await _orderService.PlaceOrderAsync(userId, reservation, payment, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
 

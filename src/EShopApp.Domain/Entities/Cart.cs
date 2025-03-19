@@ -6,26 +6,19 @@ namespace EShopApp.Domain.Entities;
 public class Cart : Entity<int>
 {
     public int UserId { get; private set; }
+    public User? User { get; private set; }
     public DateTime? SessionExpiryDate { get; private set; }
     public static TimeSpan DefaultSessionExpiryDuration = TimeSpan.FromMinutes(15);
     public ICollection<CartItem> CartItems { get; private set; } = [];
     public decimal TotalPrice => CartItems.Sum(ci => ci.UnitPrice * ci.Quantity);
 
-    protected Cart()
+    private Cart()
     {
     }
 
     public Cart(int userId)
     {
         UserId = userId;
-    }
-
-    public Cart(int id, int userId, DateTime expiryDate, List<CartItem> cartItems)
-    {
-        UserId = userId;
-        SessionExpiryDate = expiryDate;
-        CartItems = cartItems;
-        Id = id;
     }
 
     public void SetExpiryDate(DateTime expiryDate)
@@ -43,7 +36,7 @@ public class Cart : Entity<int>
             return existingCartItem;
         }
 
-        var cartItem = new CartItem(this.Id, productId, quantity, price);
+        var cartItem = new CartItem(this, productId, quantity, price);
         CartItems.Add(cartItem);
         return cartItem;
     }

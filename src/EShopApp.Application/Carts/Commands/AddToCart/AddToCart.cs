@@ -44,7 +44,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ErrorOr
         if (product.Inventory is null || product.Inventory.AvailableStock < request.Quantity)
             return Error.Conflict(description: "Out of stock");
 
-        var cartItem = userCart.AddToCart(request.ProductId, request.Quantity, product.Price);
+        var cartItem = userCart.AddToCart(product.Id, request.Quantity, product.Price);
         if (cartItem.Quantity > product.Inventory.AvailableStock)
             return Error.Conflict(description: "Not enough stock");
 

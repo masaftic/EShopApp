@@ -16,7 +16,7 @@ MIGRATIONS_PATH="Data/Migrations"
 dotnet ef migrations add "$MIGRATION_NAME" \
     --project "$PROJECT" \
     --startup-project "$STARTUP_PROJECT" \
-    --output-dir "$MIGRATIONS_PATH" --verbose
+    --output-dir "$MIGRATIONS_PATH" # --verbose
 
 # Check if migration was successful
 if [ $? -eq 0 ]; then

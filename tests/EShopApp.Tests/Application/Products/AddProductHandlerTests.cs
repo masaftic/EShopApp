@@ -3,7 +3,7 @@ using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
 using EShopApp.Tests.Testing;
 
-namespace EShopApp.Tests.ApplicationTests.Products.Commands;
+namespace EShopApp.Tests.Application.Products;
 
 public class AddProductHandlerTests : TestBase
 {

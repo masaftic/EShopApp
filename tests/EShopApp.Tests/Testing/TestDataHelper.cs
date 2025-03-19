@@ -7,9 +7,9 @@ namespace EShopApp.Tests.Testing;
 
 public static class TestDataHelper
 {
-    public static async Task<User> CreateTestUser(ApplicationDbContext context, int id = 1)
+    public static async Task<User> CreateTestUser(ApplicationDbContext context)
     {
-        var user = new User(id, "Test", "User", "test@example.com", new Address("st", "city", "country"));
+        var user = new User("Test", "User", "test@example.com", new Address("st", "city", "country"));
         context.DomainUsers.Add(user);
         await context.SaveChangesAsync();
         return user;
@@ -17,7 +17,6 @@ public static class TestDataHelper
 
     public static async Task<(Product Product, Category Category)> CreateTestProduct(
         ApplicationDbContext context,
-        int productId = 1,
         decimal price = 10.0m,
         int stockQuantity = 10)
     {
@@ -25,8 +24,8 @@ public static class TestDataHelper
         await context.Categories.AddAsync(category);
         await context.SaveChangesAsync();
 
-        var product = new Product(productId, "Test Product", price, "Description", category.Id);
-        var inventory = new Inventory(productId, product, stockQuantity, 100, 1);
+        var product = new Product("Test Product", price, "Description", category);
+        var inventory = new Inventory(product.Id, stockQuantity, 100, 1);
         product.Inventory = inventory;
         
         await context.Products.AddAsync(product);
@@ -35,7 +34,7 @@ public static class TestDataHelper
         return (product, category);
     }
 
-    public static async Task<Cart> CreateTestCart(ApplicationDbContext context, int userId = 1)
+    public static async Task<Cart> CreateTestCart(ApplicationDbContext context, int userId)
     {
         var cart = new Cart(userId);
         await context.Carts.AddAsync(cart);
@@ -45,12 +44,12 @@ public static class TestDataHelper
 
     public static async Task<CartItem> CreateTestCartItem(
         ApplicationDbContext context, 
-        int cartId,
-        int productId,
+        Cart cart,
+        Product product,
         int quantity = 1,
         decimal unitPrice = 10.0m)
     {
-        var cartItem = new CartItem(cartId, productId, quantity, unitPrice);
+        var cartItem = new CartItem(cart, product.Id, quantity, unitPrice);
         await context.CartItems.AddAsync(cartItem);
         await context.SaveChangesAsync();
         return cartItem;
@@ -65,7 +64,7 @@ public static class TestDataHelper
         await context.Categories.AddAsync(category);
         await context.SaveChangesAsync();
         
-        category.InitPath(parentPath);
+        category.UpdatePath();
         await context.SaveChangesAsync();
         return category;
     }

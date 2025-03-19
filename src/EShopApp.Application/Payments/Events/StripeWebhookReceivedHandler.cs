@@ -19,7 +19,7 @@ public class StripeWebhookReceivedHandler : INotificationHandler<StripeWebhookRe
 
     public async Task Handle(StripeWebhookReceivedEvent notification, CancellationToken cancellationToken)
     {
-        var processedPaymentResult = await _paymentService.ProcessWebhookAsync(notification.RawJson, notification.Signature);
+        var processedPaymentResult = _paymentService.ProcessWebhook(notification.RawJson, notification.Signature);
         if (processedPaymentResult.IsError)
         {
             await _mediator.Publish(new PaymentFailedEvent(null, processedPaymentResult.Errors), cancellationToken);

@@ -11,7 +11,7 @@ public class CartMapping : IRegister
         config.NewConfig<Cart, CartDto>();
         
         config.NewConfig<CartItem, CartItemDto>()
-            .Map(dest => dest.ProductName, src => src.Product.Name)
-            .Map(dest => dest.ProductDescription, src => src.Product.Description);
+            .Map(dest => dest.ProductName, src => src.Product!.Name)
+            .Map(dest => dest.ProductDescription, src => src.Product!.Description);
     }
 }

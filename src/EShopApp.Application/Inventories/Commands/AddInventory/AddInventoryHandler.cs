@@ -29,7 +29,7 @@ public class AddInventoryHandler : IRequestHandler<AddInventoryCommand, ErrorOr<
             return Error.Conflict(description: "Inventory already exists");
         }
         
-        var inventory = new Inventory(product.Id, product, request.Stock, request.ReorderQuantity, request.ReorderLevel);
+        var inventory = new Inventory(product.Id, request.Stock, request.ReorderQuantity, request.ReorderLevel);
         await _dbContext.Inventories.AddAsync(inventory, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);

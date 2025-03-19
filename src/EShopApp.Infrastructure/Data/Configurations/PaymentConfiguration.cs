@@ -13,5 +13,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Domain.Entities.Pay
             .HasOne<User>()
             .WithMany(u => u.Payments)
             .HasForeignKey(p => p.UserId);
+        
+        builder.HasOne(p => p.Order)
+            .WithOne(o => o.Payment)
+            .HasForeignKey<Order>(o => o.PaymentId);
     }
 }

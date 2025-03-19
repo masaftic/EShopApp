@@ -37,7 +37,7 @@ public class IdentityService : IIdentityService
 
     public async Task<ErrorOr<AuthenticationResult>> SignUpAsync(User user, string password)
     {
-        var applicationUser = ApplicationUser.FromUser(user);
+        var applicationUser = new ApplicationUser(user);
 
         var result = await _userManager.CreateAsync(applicationUser, password);
         if (!result.Succeeded)

@@ -89,12 +89,17 @@ namespace EShopApp.Infrastructure.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("Categories");
                 });
@@ -196,7 +201,8 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
 
                     b.HasIndex("ReservationId");
 
@@ -606,11 +612,13 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Cart", b =>
                 {
-                    b.HasOne("EShopApp.Domain.Entities.User", null)
+                    b.HasOne("EShopApp.Domain.Entities.User", "User")
                         .WithOne("Cart")
                         .HasForeignKey("EShopApp.Domain.Entities.Cart", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.CartItem", b =>
@@ -624,12 +632,22 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.HasOne("EShopApp.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cart");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EShopApp.Domain.Entities.Category", b =>
+                {
+                    b.HasOne("EShopApp.Domain.Entities.Category", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.Inventory", b =>
@@ -657,8 +675,8 @@ namespace EShopApp.Infrastructure.Data.Migrations
             modelBuilder.Entity("EShopApp.Domain.Entities.Order", b =>
                 {
                     b.HasOne("EShopApp.Domain.Entities.Payment", "Payment")
-                        .WithMany()
-                        .HasForeignKey("PaymentId")
+                        .WithOne("Order")
+                        .HasForeignKey("EShopApp.Domain.Entities.Order", "PaymentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -668,7 +686,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EShopApp.Domain.Entities.User", null)
+                    b.HasOne("EShopApp.Domain.Entities.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -677,6 +695,8 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("Payment");
 
                     b.Navigation("Reservation");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.OrderItem", b =>
@@ -690,7 +710,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.HasOne("EShopApp.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -721,7 +741,7 @@ namespace EShopApp.Infrastructure.Data.Migrations
             modelBuilder.Entity("EShopApp.Domain.Entities.Reservation", b =>
                 {
                     b.HasOne("EShopApp.Domain.Entities.User", null)
-                        .WithMany()
+                        .WithMany("Reservations")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -729,17 +749,21 @@ namespace EShopApp.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("EShopApp.Domain.Entities.ReservationItem", b =>
                 {
-                    b.HasOne("EShopApp.Domain.Entities.Product", null)
+                    b.HasOne("EShopApp.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EShopApp.Domain.Entities.Reservation", null)
+                    b.HasOne("EShopApp.Domain.Entities.Reservation", "Reservation")
                         .WithMany("ReservationItems")
                         .HasForeignKey("ReservationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("EShopApp.Domain.Entities.User", b =>
@@ -848,6 +872,11 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("OrderItems");
                 });
 
+            modelBuilder.Entity("EShopApp.Domain.Entities.Payment", b =>
+                {
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("EShopApp.Domain.Entities.Product", b =>
                 {
                     b.Navigation("Inventory")
@@ -867,6 +896,8 @@ namespace EShopApp.Infrastructure.Data.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Payments");
+
+                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }

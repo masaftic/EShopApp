@@ -4,37 +4,29 @@ namespace EShopApp.Domain.Entities;
 
 public class Product : Entity<int>
 {
-    public string Name { get; private set; }
-    public Inventory Inventory { get; set; }
+    public string Name { get; private set; } = string.Empty;
+    public Inventory Inventory { get; set; } = null!;
     public decimal Price { get; private set; }
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
     public int CategoryId { get; private set; }
-    public Category Category { get; private set; }
+    public Category Category { get; private set; } = null!;
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
     
-    public Product()
+    private Product() // ef core
     {
     }
 
-    public Product(int id, string name, decimal price, string description, int categoryId)
+    public Product(string name, decimal price, string description, Category category)
     {
-        Id = id;
-        Name = name;
-        Price = price;
-        Description = description;
-        CategoryId = categoryId;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-    }
+        if (string.IsNullOrEmpty(name)) throw new ArgumentException("Product name is required.");
+        if (price <= 0) throw new ArgumentException("Product price must be greater than zero.");
 
-    public Product(string name, decimal price, string description, int categoryId)
-    {
         Name = name;
         Price = price;
         Description = description;
-        CategoryId = categoryId;
+        Category = category ?? throw new ArgumentException("Product category is required.");
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }

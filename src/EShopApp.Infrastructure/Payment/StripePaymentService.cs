@@ -1,6 +1,5 @@
 using ErrorOr;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.Payments.Commands.CreatePayment;
 using EShopApp.Application.Payments.DTOs;
 using EShopApp.Infrastructure.Payment;
 using Microsoft.Extensions.Logging;
@@ -80,7 +79,7 @@ public class StripePaymentService : IPaymentService
         }
     }
 
-    public async Task<ErrorOr<PaymentStatusResponse>> ProcessWebhookAsync(string rawJson, string Signature)
+    public ErrorOr<PaymentStatusResponse> ProcessWebhook(string rawJson, string Signature)
     {
         _logger.LogInformation("Processing Stripe webhook event.");
 

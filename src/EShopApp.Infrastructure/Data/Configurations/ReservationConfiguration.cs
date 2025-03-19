@@ -10,12 +10,12 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
     public void Configure(EntityTypeBuilder<Reservation> builder)
     {
         builder.HasOne<User>()
-            .WithMany()
+            .WithMany(u => u.Reservations)
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.Restrict);
         
-        builder.HasMany<ReservationItem>(r => r.ReservationItems)
-            .WithOne()
+        builder.HasMany(r => r.ReservationItems)
+            .WithOne(ri => ri.Reservation)
             .HasForeignKey(ri => ri.ReservationId)
             .OnDelete(DeleteBehavior.Cascade);
         
@@ -27,7 +27,7 @@ public class ReservationItemConfiguration : IEntityTypeConfiguration<Reservation
 {
     public void Configure(EntityTypeBuilder<ReservationItem> builder)
     {
-        builder.HasOne<Product>()
+        builder.HasOne(p => p.Product)
             .WithMany()
             .HasForeignKey(ri => ri.ProductId)
             .OnDelete(DeleteBehavior.Restrict);

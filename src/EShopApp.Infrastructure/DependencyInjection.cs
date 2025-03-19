@@ -24,7 +24,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var stripeApiCredentials = configuration.GetSection(StripeApiCredentials.SectionName).Get<StripeApiCredentials>();
+        var stripeApiCredentials = configuration.GetSection(StripeApiCredentials.SectionName).Get<StripeApiCredentials>() ?? throw new ArgumentNullException("Stripe API credentials not found in configuration.");
 
         StripeConfiguration.ApiKey = stripeApiCredentials.SecretKey;
 

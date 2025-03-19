@@ -4,5 +4,5 @@ namespace EShopApp.Application.Payments.Services;
 
 public interface IOrderService
 {
-    Task<Order> PlaceOrderAsync(Reservation reservation, Payment payment, CancellationToken cancellationToken);
+    Task<Order> PlaceOrderAsync(int userId, Reservation reservation, Payment payment, CancellationToken cancellationToken);
 }

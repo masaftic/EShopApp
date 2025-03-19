@@ -3,21 +3,20 @@ namespace EShopApp.Domain.Entities;
 public class Inventory : Entity<int>
 {
     public int ProductId { get; set; }
-    public Product Product { get; set; }
+    public Product? Product { get; set; }
     public int Stock { get; set; }
     public int ReservedStock { get; set; }
     public int AvailableStock => Stock - ReservedStock;
     public int ReorderLevel { get; set; }
     public int ReorderQuantity { get; set; }
 
-    public Inventory()
+    private Inventory() // ef core
     {
     }
 
-    public Inventory(int productId, Product product, int stock, int reorderQuantity, int reorderLevel)
+    public Inventory(int productId, int stock, int reorderQuantity, int reorderLevel)
     {
         ProductId = productId;
-        Product = product;
         Stock = stock;
         ReservedStock = 0;
         ReorderLevel = reorderLevel;

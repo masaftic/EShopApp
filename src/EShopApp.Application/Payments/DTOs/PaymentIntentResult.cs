@@ -1,4 +1,4 @@
-namespace EShopApp.Application.Payments.Commands.CreatePayment;
+namespace EShopApp.Application.Payments.DTOs;
 
 public record PaymentIntentResult(
     string PaymentIntentId,
