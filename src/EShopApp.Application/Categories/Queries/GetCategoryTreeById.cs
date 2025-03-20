@@ -50,6 +50,6 @@ public class GetCategoryTreeByIdQueryHandler : IRequestHandler<GetCategoryTreeBy
             }
         }
 
-        return CategoryTreeDto.BuildTreeFromGraph(request.CategoryId, rootCategory, graph);
+        return CategoryTreeDto.BuildTreeFromGraph(rootCategory, graph);
     }
 }

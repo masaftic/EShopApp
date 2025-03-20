@@ -13,20 +13,20 @@ public class CategoryTreeDto
     {
     }
 
-    public static CategoryTreeDto BuildTreeFromGraph(int root, CategoryDto rootCategory, Dictionary<int, List<CategoryDto>> graph)
+    public static CategoryTreeDto BuildTreeFromGraph(CategoryDto current, Dictionary<int, List<CategoryDto>> graph)
     {
         var tree = new CategoryTreeDto
         {
-            Id = root,
-            Name = rootCategory.Name,
-            Path = rootCategory.Path,
+            Id = current.Id,
+            Name = current.Name,
+            Path = current.Path,
         };
 
-        if (graph.TryGetValue(root, out List<CategoryDto>? children))
+        if (graph.TryGetValue(current.Id, out List<CategoryDto>? children))
         {
             foreach (var child in children)
             {
-                tree.Children.Add(BuildTreeFromGraph(child.Id, child, graph));
+                tree.Children.Add(BuildTreeFromGraph(child, graph));
             }
         }
 
