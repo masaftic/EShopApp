@@ -1,6 +1,10 @@
+using System.Text.RegularExpressions;
 using ErrorOr;
+using EShopApp.Application.Categories.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
+using FluentValidation;
+using Mapster;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +12,9 @@ namespace EShopApp.Application.Categories.Commands.Add;
 
 public record AddCategoryCommand(
     string Name,
-    int? ParentId) : IRequest<ErrorOr<Category>>;
+    int? ParentId) : IRequest<ErrorOr<CategoryDto>>;
 
-public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, ErrorOr<Category>>
+public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, ErrorOr<CategoryDto>>
 {
     private readonly IApplicationDbContext _dbContext;
 
@@ -19,7 +23,7 @@ public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, Err
         _dbContext = dbContext;
     }
 
-    public async Task<ErrorOr<Category>> Handle(AddCategoryCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<CategoryDto>> Handle(AddCategoryCommand request, CancellationToken cancellationToken)
     {
         Category? parentCategory = null;
 
@@ -51,12 +55,22 @@ public class AddCategoryCommandHandler : IRequestHandler<AddCategoryCommand, Err
 
             await transaction.CommitAsync(cancellationToken);
 
-            return category;
+            return category.Adapt<CategoryDto>();
         }
         catch (Exception e)
         {
             await transaction.RollbackAsync(cancellationToken);
             return Error.Failure(description: e.Message);
         }
+    }
+}
+
+public class AddCategoryCommandValidator : AbstractValidator<AddCategoryCommand>
+{
+    public AddCategoryCommandValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Name is required")
+            .MaximumLength(100).WithMessage("Name must not exceed 100 characters");
     }
 }

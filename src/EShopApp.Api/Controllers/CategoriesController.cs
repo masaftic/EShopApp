@@ -1,7 +1,7 @@
 using EShopApp.Api.Models.Requests;
+using EShopApp.Application.Categories.Commands;
 using EShopApp.Application.Categories.Commands.Add;
-using EShopApp.Application.Categories.Queries.GetCategories;
-using EShopApp.Application.Categories.Queries.GetCategoryById;
+using EShopApp.Application.Categories.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,11 +19,9 @@ public class CategoriesController : ApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCategories([FromQuery] GetCategoriesRequest request)
+    public async Task<IActionResult> GetAllCategories()
     {
-        var segments = request.Path?.Split("/", StringSplitOptions.RemoveEmptyEntries);
-        
-        var query = new GetCategoriesQuery(segments);
+        var query = new GetAllCategoriesQuery();
         var result = await _mediator.Send(query);
 
         return result.Match(Ok, HandleErrors);
@@ -39,6 +37,41 @@ public class CategoriesController : ApiController
         return result.Match(Ok, HandleErrors);
     }
     
+    [HttpGet("{categoryId:int}/tree")]
+    public async Task<IActionResult> GetCategoryTree(int categoryId)
+    {
+        var query = new GetCategoryTreeByIdQuery(categoryId);
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
+    [HttpGet("{categoryId:int}/descendants")]
+    public async Task<IActionResult> GetCategoryDescendants(int categoryId)
+    {
+        var query = new GetCategoryDescendantsQuery(categoryId);
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
+    [HttpGet("{categoryId:int}/subcategories")]
+    public async Task<IActionResult> GetSubcategories(int categoryId)
+    {
+        var query = new GetSubCategoriesQuery(categoryId);
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
+    [HttpGet("{categoryId:int}/breadcrumbs")]
+    public async Task<IActionResult> GetBreadCrumbs(int categoryId)
+    {
+        var query = new GetCategoryBreadCrumbsQuery(categoryId);
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
+    }
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -50,5 +83,14 @@ public class CategoriesController : ApiController
             value => CreatedAtAction(nameof(GetById), new { categoryId = value.Id }, value),
             HandleErrors
         );
+    }
+
+    [HttpDelete]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteCategory(DeleteCategoryCommand command)
+    {
+        var result = await _mediator.Send(command);
+
+        return result.Match(value => NoContent(), HandleErrors);
     }
 }
