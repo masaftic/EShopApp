@@ -28,7 +28,7 @@ public class GetOrderByUserHandler : IRequestHandler<GetOrderByUser, ErrorOr<Lis
         var orders = await _dbContext.Orders
             .Where(o => o.UserId == userId)
             .ProjectToType<OrderDto>()
-            .ToListAsync();
+            .ToListAsync(cancellationToken: cancellationToken);
 
         return orders;
     }

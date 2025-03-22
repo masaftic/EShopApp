@@ -14,8 +14,8 @@ public class OrderMapping : IRegister
             .Map(dest => dest.OrderItems, src => src.OrderItems.ToArray());
 
         config.NewConfig<OrderItem, OrderItemDto>()
-            .Map(dest => dest.ProductName, src => src.Product.Name)
-            .Map(dest => dest.ProductDescription, src => src.Product.Description);
+            .Map(dest => dest.ProductName, src => src.Product!.Name)
+            .Map(dest => dest.ProductDescription, src => src.Product!.Description);
         
         config.NewConfig<Address, AddressDto>();
     }
