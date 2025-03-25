@@ -25,7 +25,7 @@ public class GetCategoryBreadCrumbsQueryHandler : IRequestHandler<GetCategoryBre
         var category = await _dbContext.Categories.FindAsync([request.CategoryId], cancellationToken);
 
         if (category is null)
-            return Errors.Category.NotFound(request.CategoryId);
+            return DomainErrors.Category.NotFound(request.CategoryId);
 
         var ids = category.Path.Split('/').Where(id => !string.IsNullOrWhiteSpace(id)).Select(int.Parse).ToList();
 

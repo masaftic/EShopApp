@@ -23,7 +23,7 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Error
     {
         var category = await _dbContext.Categories.FindAsync([command.CategoryId], cancellationToken);
         if (category == null)
-            return Errors.Category.NotFound(command.CategoryId);
+            return DomainErrors.Category.NotFound(command.CategoryId);
 
         var product = new Product(command.Name, command.Price, command.Description, category);
 

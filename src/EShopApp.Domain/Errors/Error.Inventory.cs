@@ -2,7 +2,7 @@ using ErrorOr;
 
 namespace EShopApp.Domain.Errors;
 
-public static partial class Errors
+public static partial class DomainErrors
 {
     public static class Inventory
     {

@@ -23,7 +23,7 @@ public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryComman
         var category = await _dbContext.Categories.FindAsync([request.CategoryId], cancellationToken);
 
         if (category is null)
-            return Errors.Category.NotFound(request.CategoryId);
+            return DomainErrors.Category.NotFound(request.CategoryId);
         
         _dbContext.Categories.Remove(category);
         await _dbContext.SaveChangesAsync(cancellationToken);

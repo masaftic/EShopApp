@@ -39,7 +39,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ErrorOr
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken: cancellationToken);
 
         if (product == null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         if (product.Inventory is null || product.Inventory.AvailableStock < request.Quantity)
             return Error.Conflict(description: "Out of stock");

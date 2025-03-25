@@ -29,11 +29,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
     {
         var category = await _dbContext.Categories.FindAsync([request.CategoryId], cancellationToken);
         if (category == null)
-            return Errors.Category.NotFound(request.CategoryId);
+            return DomainErrors.Category.NotFound(request.CategoryId);
 
         var product = await _dbContext.Products.FindAsync([request.Id], cancellationToken);
         if (product == null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         product.UpdateProduct(request.Name, request.Price,
             request.Description, request.CategoryId);

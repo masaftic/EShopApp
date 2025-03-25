@@ -28,11 +28,11 @@ public class UpdateInventoryHandler : IRequestHandler<UpdateInventoryCommand, Er
     {
         var inventory = await _dbContext.Inventories.FindAsync([request.InventoryId], cancellationToken);
         if (inventory is null)
-            return Errors.Inventory.NotFound(request.InventoryId);
+            return DomainErrors.Inventory.NotFound(request.InventoryId);
         
         var product = await _dbContext.Products.FindAsync([request.ProductId], cancellationToken);
         if (product is null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         if (await _dbContext.Inventories.AnyAsync(i => i.ProductId == product.Id, cancellationToken))
             return Error.Conflict(description: "Inventory already exists");

@@ -22,7 +22,7 @@ public class AddInventoryHandler : IRequestHandler<AddInventoryCommand, ErrorOr<
     {
         var product = await _dbContext.Products.FindAsync([request.ProductId], cancellationToken);
         if (product is null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         if (await _dbContext.Inventories.AnyAsync(i => i.ProductId == product.Id, cancellationToken))
         {

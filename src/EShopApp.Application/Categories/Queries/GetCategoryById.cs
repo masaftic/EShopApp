@@ -29,7 +29,7 @@ public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery,
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (category is null)
-            return Errors.Category.NotFound(request.Id);
+            return DomainErrors.Category.NotFound(request.Id);
 
         return category;
     }

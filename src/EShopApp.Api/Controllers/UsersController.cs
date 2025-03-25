@@ -72,7 +72,7 @@ public class UsersController : ApiController
         }
 
         var result = await _mediator.Send(new UserDetailsQuery(int.Parse(userId)));
-        if (result.IsError && result.FirstError == Errors.User.InvalidCredentials)
+        if (result.IsError && result.FirstError == DomainErrors.User.InvalidCredentials)
         {
             return Problem(
                 statusCode: StatusCodes.Status401Unauthorized,

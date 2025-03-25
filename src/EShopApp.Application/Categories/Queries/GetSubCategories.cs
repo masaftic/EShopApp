@@ -25,7 +25,7 @@ public class GetSubCategoriesQueryHandler : IRequestHandler<GetSubCategoriesQuer
     {
         var category = await _dbContext.Categories.AnyAsync(c => c.Id == request.CategoryId, cancellationToken);
         if (!category)
-            return Errors.Category.NotFound(request.CategoryId);
+            return DomainErrors.Category.NotFound(request.CategoryId);
     
         return await _dbContext.Categories
             .Where(c => c.ParentId == request.CategoryId)

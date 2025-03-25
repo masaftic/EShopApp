@@ -31,7 +31,7 @@ public class AddProductHandlerTests : TestBase
 
         // Assert
         Assert.True(result.IsError);
-        Assert.Equal(Errors.Category.NotFound(command.CategoryId), result.FirstError);
+        Assert.Equal(DomainErrors.Category.NotFound(command.CategoryId), result.FirstError);
     }
 
     [Fact]

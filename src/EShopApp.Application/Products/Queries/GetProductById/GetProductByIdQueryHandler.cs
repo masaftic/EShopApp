@@ -26,7 +26,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, E
             .FirstOrDefaultAsync(cancellationToken);
         
         if (product is null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         return product;
     }

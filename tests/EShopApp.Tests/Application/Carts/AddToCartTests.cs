@@ -57,7 +57,7 @@ public class AddToCartTests : TestBase
 
         // Assert
         Assert.True(result.IsError);
-        Assert.Equal(Errors.Product.NotFound, result.FirstError);
+        Assert.Equal(DomainErrors.Product.NotFound, result.FirstError);
     }
 
     [Fact]

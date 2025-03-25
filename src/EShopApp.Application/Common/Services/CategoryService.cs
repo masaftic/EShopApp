@@ -23,7 +23,7 @@ public class CategoryService : ICategoryService
         {
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
-                return Errors.Category.NotFound(id);
+                return DomainErrors.Category.NotFound(id);
         }
 
         return await RetrieveCategoriesFromHierarchyPath(pathIds);
@@ -48,7 +48,7 @@ public class CategoryService : ICategoryService
                     c.Name.ToLower() == name);
 
             if (category == null)
-                return Errors.Category.PathNotFound;
+                return DomainErrors.Category.PathNotFound;
 
             pathIds.Add(category.Id);
         }
@@ -62,7 +62,7 @@ public class CategoryService : ICategoryService
         var categories = await _dbContext.Categories.Where(c => c.Path == path || (path != "/" && c.Path.StartsWith(path + "/"))).ToListAsync();
 
         if (categories.Count == 0)
-            return Errors.Category.PathNotFound;
+            return DomainErrors.Category.PathNotFound;
 
         return categories;
     }

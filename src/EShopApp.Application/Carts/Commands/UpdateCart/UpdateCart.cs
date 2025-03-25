@@ -45,7 +45,7 @@ public class AddToCartCommandHandler : IRequestHandler<UpdateCartCommand, ErrorO
             .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken: cancellationToken);
 
         if (product is null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         var cartItem = userCart.CartItems.FirstOrDefault(ci => ci.ProductId == request.ProductId);
         if (cartItem is null)

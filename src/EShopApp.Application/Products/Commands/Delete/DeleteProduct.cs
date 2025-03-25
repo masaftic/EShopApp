@@ -20,7 +20,7 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, ErrorO
     {
         var product = await _dbContext.Products.FindAsync([request.Id], cancellationToken);
         if (product == null)
-            return Errors.Product.NotFound;
+            return DomainErrors.Product.NotFound;
 
         _dbContext.Products.Remove(product);
         await _dbContext.SaveChangesAsync(cancellationToken);

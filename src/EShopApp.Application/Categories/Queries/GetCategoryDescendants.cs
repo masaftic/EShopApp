@@ -25,7 +25,7 @@ public class GetCategoryDescendantsQueryHandler : IRequestHandler<GetCategoryDes
         var category = await _dbContext.Categories.FindAsync([request.CategoryId], cancellationToken);
 
         if (category is null)
-            return Errors.Category.NotFound(request.CategoryId);
+            return DomainErrors.Category.NotFound(request.CategoryId);
 
         return await _dbContext.Categories
             .Where(c => c.Path.StartsWith($"{category.Path}/")) 
