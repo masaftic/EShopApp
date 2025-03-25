@@ -15,7 +15,7 @@ using EShopApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Stripe;
-using IdentityService = EShopApp.Infrastructure.Data.Identity.IdentityService;
+using IdentityService = EShopApp.Infrastructure.Identity.IdentityService;
 using EShopApp.Infrastructure.Payment;
 
 namespace EShopApp.Infrastructure;

@@ -4,10 +4,11 @@ using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
 using EShopApp.Infrastructure.Authentication;
+using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Infrastructure.Data.Identity;
+namespace EShopApp.Infrastructure.Identity;
 
 public class IdentityService : IIdentityService
 {
@@ -30,7 +31,7 @@ public class IdentityService : IIdentityService
             .FirstOrDefaultAsync(u => u.Email == email);
 
         if (applicationUser is null)
-            return Errors.User.NotFound;
+            return DomainErrors.User.NotFound;
 
         return applicationUser.User;
     }
@@ -54,11 +55,11 @@ public class IdentityService : IIdentityService
             .FirstOrDefaultAsync(u => u.Email == email);
 
         if (applicationUser is null)
-            return Errors.User.InvalidCredentials;
+            return DomainErrors.User.InvalidCredentials;
 
         var result = await _userManager.CheckPasswordAsync(applicationUser, password);
         if (!result)
-            return Errors.User.InvalidCredentials;
+            return DomainErrors.User.InvalidCredentials;
 
         var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
         return new AuthenticationResult(token, expiresIn);
@@ -71,7 +72,7 @@ public class IdentityService : IIdentityService
             .FirstOrDefaultAsync(u => u.UserId == userId);
 
         if (applicationUser is null)
-            return Errors.User.NotFound;
+            return DomainErrors.User.NotFound;
 
         return applicationUser.User;
     }
