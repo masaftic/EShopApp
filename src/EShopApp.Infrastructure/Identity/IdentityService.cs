@@ -41,8 +41,8 @@ public class IdentityService : IIdentityService
         var applicationUser = new ApplicationUser(user);
 
         var result = await _userManager.CreateAsync(applicationUser, password);
-        if (!result.Succeeded)
-            return result.Errors.Select(e => Error.Validation(e.Code, e.Description)).ToList();
+        if (!result.Succeeded) // Username isn't handled by the domain
+            return result.Errors.Where(e => e.Code != "DuplicateUserName").Select(e => Error.Validation(e.Code, e.Description)).ToList();
 
         var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
         return new AuthenticationResult(token, expiresIn);

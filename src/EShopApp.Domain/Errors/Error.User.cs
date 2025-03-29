@@ -7,12 +7,12 @@ public static partial class DomainErrors
     public static class User
     {
         public static Error DuplicateEmail =>
-            Error.Conflict("User.DuplicateEmail", "Email is already in use.");
+            Error.Conflict("User.DuplicateEmail", "Email is already in use");
 
         public static Error InvalidCredentials =>
-            Error.Validation("User.InvalidCredentials", "Invalid credentials.");
+            Error.Conflict("User.InvalidCredentials", "Invalid credentials");
 
         public static Error NotFound =>
-            Error.NotFound("User.NotFound", "User not found.");
+            Error.NotFound("User.NotFound", "User not found");
     }
 }

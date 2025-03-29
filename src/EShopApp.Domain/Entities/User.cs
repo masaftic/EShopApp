@@ -8,7 +8,7 @@ public class User
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
-    public Address Address { get; private set; } = null!;
+    public Address? Address { get; private set; }
     public ICollection<Order> Orders { get; set; } = [];
     public Cart? Cart { get; set; }
     public ICollection<Payment> Payments { get; set; } = [];
@@ -19,11 +19,10 @@ public class User
     {
     }
 
-    public User(string firstName, string lastName, string email, Address address)
+    public User(string firstName, string lastName, string email)
     {
         FirstName = firstName;
         LastName = lastName;
         Email = email;
-        Address = address;
     }
 }

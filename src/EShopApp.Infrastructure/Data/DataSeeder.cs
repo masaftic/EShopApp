@@ -37,7 +37,7 @@ public class DataSeeder
 
     public async Task CreateAdminAsync()
     {
-        var admin = new User("Admin", "Admin", "Admin@gmail.com", new Address("Street 123", "City 123", "Country 123"));
+        var admin = new User("Admin", "Admin", "Admin@gmail.com");
         if (await _userManager.FindByEmailAsync("admin@gmail.com") == null)
         {
             var adminUser = new ApplicationUser(admin);

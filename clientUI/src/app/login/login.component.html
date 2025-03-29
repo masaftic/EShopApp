@@ -1,1 +1,27 @@
-<p>login works!</p>
+<div class="login-container">
+  <div class="login-card">
+    <div class="image-section">
+      <img [src]="shopImage" alt="Shop Logo">
+    </div>
+    <div class="form-section">
+      <h2>Login</h2>
+      <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" formControlName="email" (input)="onInputChange('email')"
+            [class.error]="(loginForm.get('email')?.invalid && loginForm.get('email')?.touched) || loginForm.get('email')?.errors?.['serverError']">
+          <span class="error-message">{{getErrorMessage('email')}}</span>
+        </div>
+
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" formControlName="password" (input)="onInputChange('password')"
+            [class.error]="(loginForm.get('password')?.invalid && loginForm.get('password')?.touched) || loginForm.get('password')?.errors?.['serverError']">
+          <span class="error-message">{{getErrorMessage('password')}}</span>
+        </div>
+
+        <button type="submit" [disabled]="loginForm.invalid">Login</button>
+      </form>
+    </div>
+  </div>
+</div>
