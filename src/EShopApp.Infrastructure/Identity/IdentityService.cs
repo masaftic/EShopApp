@@ -1,6 +1,6 @@
 using ErrorOr;
-using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
+using EShopApp.Application.Users.DTOs;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
 using EShopApp.Infrastructure.Authentication;
@@ -15,13 +15,15 @@ public class IdentityService : IIdentityService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole<int>> _roleManager;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly IApplicationDbContext _dbContext;
 
     public IdentityService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<int>> roleManager,
-        IJwtTokenGenerator jwtTokenGenerator)
+        IJwtTokenGenerator jwtTokenGenerator, IApplicationDbContext dbContext)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _dbContext = dbContext;
     }
 
     public async Task<ErrorOr<User>> GetUserByEmailAsync(string email)
@@ -44,8 +46,9 @@ public class IdentityService : IIdentityService
         if (!result.Succeeded) // Username isn't handled by the domain
             return result.Errors.Where(e => e.Code != "DuplicateUserName").Select(e => Error.Validation(e.Code, e.Description)).ToList();
 
-        var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
-        return new AuthenticationResult(token, expiresIn);
+        var accessToken = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+        return new AuthenticationResult(accessToken, refreshToken, applicationUser.UserId);
     }
 
     public async Task<ErrorOr<AuthenticationResult>> SignInAsync(string email, string password)
@@ -61,8 +64,9 @@ public class IdentityService : IIdentityService
         if (!result)
             return DomainErrors.User.InvalidCredentials;
 
-        var (token, expiresIn) = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
-        return new AuthenticationResult(token, expiresIn);
+        var accessToken = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+        return new AuthenticationResult(accessToken, refreshToken, applicationUser.UserId);
     }
 
     public async Task<ErrorOr<User>> GetUserByIdAsync(int userId)
@@ -75,5 +79,19 @@ public class IdentityService : IIdentityService
             return DomainErrors.User.NotFound;
 
         return applicationUser.User;
+    }
+
+    public async Task<ErrorOr<AuthenticationResult>> SignInAsync(User user)
+    {
+        var applicationUser = await _userManager.Users
+            .Include(u => u.User)
+            .FirstOrDefaultAsync(u => u.UserId == user.Id);
+
+        if (applicationUser is null)
+            return DomainErrors.User.NotFound;
+
+        var accessToken = await _jwtTokenGenerator.GenerateTokenAsync(applicationUser);
+        var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
+        return new AuthenticationResult(accessToken, refreshToken, applicationUser.UserId);
     }
 }
