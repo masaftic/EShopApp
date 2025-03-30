@@ -10,7 +10,7 @@ public static partial class DomainErrors
             Error.Conflict("User.DuplicateEmail", "Email is already in use");
 
         public static Error InvalidCredentials =>
-            Error.Conflict("User.InvalidCredentials", "Invalid credentials");
+            Error.Unauthorized("User.InvalidCredentials", "Invalid credentials");
 
         public static Error NotFound =>
             Error.NotFound("User.NotFound", "User not found");

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using EShopApp.Application.Users.Commands.Register;
+using EShopApp.Application.Users.Queries;
 using EShopApp.Application.Users.Queries.Details;
 using EShopApp.Application.Users.Queries.Login;
 using EShopApp.Domain.Errors;
@@ -27,42 +28,45 @@ public class UsersController : ApiController
     {
         return Ok("Hello World!");
     }
-    
+
 
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand request)
     {
         var result = await _mediator.Send(request);
-        return result.Match(
-            authenticationResult => Ok(new
-            {
-                Message = "User registered successfully.",
-                Token = authenticationResult.Token,
-                ExpiresIn = authenticationResult.ExpiresIn,
-            }),
-            errors => HandleErrors(errors)
-        );
+        return result.Match(Ok, HandleErrors);
     }
 
     [AllowAnonymous]
-    [HttpPost("login")]
+    [HttpGet("login")]
     public async Task<IActionResult> Login([FromBody] LoginQuery request)
     {
         var result = await _mediator.Send(request);
-        
-        return result.Match(
-            authenticationResult => Ok(new
-            {
-                Token = authenticationResult.Token,
-                ExpiresIn = authenticationResult.ExpiresIn,
-            }),
-            errors => HandleErrors(errors)
-        );
+
+        if (result.IsError && result.FirstError == DomainErrors.User.InvalidCredentials)
+        {
+            return Problem(
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: result.FirstError.Description);
+        }
+
+        return result.Match(Ok, HandleErrors);
     }
 
-    [HttpGet("details")]
-    public async Task<IActionResult> Details()
+    [AllowAnonymous]
+    [HttpGet("refresh-token")]
+    public async Task<IActionResult> LoginWithRefresh([FromBody] LoginWithRefreshTokenQuery request)
+    {
+        var result = await _mediator.Send(request);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUser()
     {
         var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         if (userId is null)
@@ -72,16 +76,14 @@ public class UsersController : ApiController
         }
 
         var result = await _mediator.Send(new UserDetailsQuery(int.Parse(userId)));
-        if (result.IsError && result.FirstError == DomainErrors.User.InvalidCredentials)
-        {
-            return Problem(
-                statusCode: StatusCodes.Status401Unauthorized,
-                title: result.FirstError.Description);
-        }
+        return result.Match(Ok, HandleErrors);
+    }
 
-        return result.Match(
-            authenticationResult => Ok(result.Value),
-            errors => HandleErrors(errors)
-        );
+    [Authorize(Roles = "Admin")]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUserById(int id)
+    {
+        var result = await _mediator.Send(new UserDetailsQuery(id));
+        return result.Match(Ok, HandleErrors);
     }
 }

@@ -18,6 +18,7 @@ public interface IApplicationDbContext
     DbSet<InventoryTransaction> InventoryTransactions { get; }
     DbSet<Payment> Payments { get; }
     DbSet<User> DomainUsers { get; }
+    DbSet<RefreshToken> RefreshTokens { get; }
     
     DatabaseFacade Database { get; }
 

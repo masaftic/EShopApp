@@ -10,13 +10,13 @@ using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Common.Options;
 using EShopApp.Infrastructure.Authentication;
 using EShopApp.Infrastructure.Data;
-using EShopApp.Infrastructure.Data.Identity;
 using EShopApp.Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Stripe;
-using IdentityService = EShopApp.Infrastructure.Identity.IdentityService;
+using EShopApp.Infrastructure.Identity;
 using EShopApp.Infrastructure.Payment;
+using EShopApp.Infrastructure.Data.Identity;
 
 namespace EShopApp.Infrastructure;
 
@@ -39,12 +39,13 @@ public static class DependencyInjection
 
     private static void AddServices(IServiceCollection services)
     {
-        services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IIdentityService, Identity.IdentityService>();
         services.AddScoped<DataSeeder>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IPaymentService, StripePaymentService>();
         services.AddHttpContextAccessor();
         services.AddHostedService<ExpiredReservationBackgroundService>();
+        services.AddHostedService<ExpiredRefreshTokensBackgroundService>();
     }
 
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)

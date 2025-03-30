@@ -1,6 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using EShopApp.Application.Common.DTOs;
 using EShopApp.Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -19,7 +21,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _jwtSettings = jwtSettings.Value;
     }
 
-    public async Task<(string token, int expiresIn)> GenerateTokenAsync(ApplicationUser user)
+    public async Task<string> GenerateTokenAsync(ApplicationUser user)
     {
         var signingCredentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret)),
@@ -36,7 +38,12 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             signingCredentials: signingCredentials
         );
 
-        return (new JwtSecurityTokenHandler().WriteToken(jwtToken), _jwtSettings.ExpiryMinutes * 60);
+        return new JwtSecurityTokenHandler().WriteToken(jwtToken);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
 
     private async Task<List<Claim>> GetUserClaimsAsync(ApplicationUser user)
@@ -49,10 +56,10 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-        
+
         var restOfClaims = await _userManager.GetClaimsAsync(user);
         claims.AddRange(restOfClaims);
-        
+
         var roles = await _userManager.GetRolesAsync(user);
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
         return claims;

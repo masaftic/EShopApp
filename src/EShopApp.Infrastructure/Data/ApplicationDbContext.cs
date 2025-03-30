@@ -25,6 +25,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<InventoryTransaction> InventoryTransactions { get; init; }
     public DbSet<Domain.Entities.Payment> Payments { get; init; }
     public DbSet<User> DomainUsers { get; init; }
+    public DbSet<RefreshToken> RefreshTokens { get; init; }
+
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

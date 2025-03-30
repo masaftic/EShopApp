@@ -1,12 +1,12 @@
-using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
 using ErrorOr;
 using MediatR;
+using EShopApp.Application.Users.DTOs;
 
 namespace EShopApp.Application.Users.Commands.Register;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<AuthenticationResult>>
+public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<AuthenticationResponse>>
 {
     private readonly IIdentityService _identityService;
     private readonly IApplicationDbContext _dbContext;
@@ -17,19 +17,27 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
         _dbContext = dbContext;
     }
 
-    public async Task<ErrorOr<AuthenticationResult>> Handle(RegisterCommand command, CancellationToken cancellationToken)
+    public async Task<ErrorOr<AuthenticationResponse>> Handle(RegisterCommand command, CancellationToken cancellationToken)
     {
         var user = new User(command.FirstName, command.LastName, command.Email);
 
-        var result = await _identityService.SignUpAsync(user, command.Password);
+        var authResult = await _identityService.SignUpAsync(user, command.Password);
+        if (authResult.IsError)
+            return authResult.Errors;
 
-        if (!result.IsError)
-        {
-            var cart = new Cart(user.Id);
-            await _dbContext.Carts.AddAsync(cart, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-        }
+        var refreshToken = new RefreshToken(
+            authResult.Value.AccessToken,
+            authResult.Value.UserId,
+            DateTime.UtcNow.AddDays(7));
 
-        return result;
+        var cart = new Cart(user.Id);
+
+        await _dbContext.RefreshTokens.AddAsync(refreshToken, cancellationToken);
+        await _dbContext.Carts.AddAsync(cart, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new AuthenticationResponse(
+            authResult.Value.AccessToken,
+            refreshToken.Token);
     }
 }
