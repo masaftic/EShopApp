@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using ErrorOr;
 using EShopApp.Application.Common.DTOs;
-using EShopApp.Application.Common.Helpers;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Products.DTOs;
@@ -15,12 +14,10 @@ namespace EShopApp.Application.Products.Queries.GetProducts;
 public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ErrorOr<PaginatedList<ProductDto>>>
 {
     private readonly IApplicationDbContext _dbContext;
-    private readonly CategoryPathProcessor _categoryPathProcessor;
     
-    public GetProductsQueryHandler(IApplicationDbContext dbContext, CategoryPathProcessor categoryPathProcessor)
+    public GetProductsQueryHandler(IApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
-        _categoryPathProcessor = categoryPathProcessor;
     }
 
     public async Task<ErrorOr<PaginatedList<ProductDto>>> Handle(GetProductsQuery request,
@@ -32,21 +29,6 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, ErrorOr
         {
             query = query.Where(p => p.CategoryId == request.CategoryId);
         }
-        // else if (request.Path is not null)
-        // {
-        //     var segments = request.Path.Split("/", StringSplitOptions.RemoveEmptyEntries);
-        //     
-        //     // Get all categories in the request path
-        //     var subCategoriesResult = await _categoryPathProcessor.ProcessSegmentsAsync(segments);
-        //     if (subCategoriesResult.IsError)
-        //         return subCategoriesResult.Errors;
-        //     
-        //     // map categories to Ids
-        //     var subCategoriesIds = subCategoriesResult.Value.Select(c => c.Id).ToList();
-        //     
-        //     // limit products to ones that have a categoryId in the subCategoriesResult
-        //     query = query.Where(p => subCategoriesIds.Contains(p.CategoryId));
-        // }
 
         if (request.MinPrice is not null)
             query = query.Where(p => p.Price >= request.MinPrice);

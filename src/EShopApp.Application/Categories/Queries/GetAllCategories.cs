@@ -1,6 +1,5 @@
 using ErrorOr;
 using EShopApp.Application.Categories.DTOs;
-using EShopApp.Application.Common.Helpers;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Domain.Entities;

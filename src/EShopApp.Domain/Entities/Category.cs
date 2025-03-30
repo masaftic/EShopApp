@@ -41,4 +41,10 @@ public class Category : Entity<int>
         this.Id = id;
         this.Path = path;
     }
+
+    public void UpdateCategory(string name, Category? newParent)
+    {
+        Name = name;
+        Parent = newParent;
+    }
 }

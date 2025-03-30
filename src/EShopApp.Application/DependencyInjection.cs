@@ -1,8 +1,6 @@
 using System.Reflection;
 using EShopApp.Application.Common.Behaviors;
-using EShopApp.Application.Common.Helpers;
 using EShopApp.Application.Common.Interfaces.Services;
-using EShopApp.Application.Common.Services;
 using EShopApp.Application.Payments.Services;
 using FluentValidation;
 using Mapster;
@@ -23,8 +21,6 @@ public static class DependencyInjection
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
         
-        services.AddScoped<ICategoryService, CategoryService>();
-        services.AddScoped<CategoryPathProcessor>();
         services.AddScoped<IOrderService, OrderService>();
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
