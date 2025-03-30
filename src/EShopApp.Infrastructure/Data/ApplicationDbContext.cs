@@ -26,7 +26,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public DbSet<Domain.Entities.Payment> Payments { get; init; }
     public DbSet<User> DomainUsers { get; init; }
     public DbSet<RefreshToken> RefreshTokens { get; init; }
-
+    public DbSet<Wishlist> Wishlists { get; init; }
+    public DbSet<WishlistItem> WishlistItems { get; init; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

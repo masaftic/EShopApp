@@ -19,6 +19,8 @@ public interface IApplicationDbContext
     DbSet<Payment> Payments { get; }
     DbSet<User> DomainUsers { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
+    DbSet<Wishlist> Wishlists { get; }
+    DbSet<WishlistItem> WishlistItems { get; }
     
     DatabaseFacade Database { get; }
 
