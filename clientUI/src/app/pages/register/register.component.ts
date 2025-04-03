@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule, ValidatorFn, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
@@ -11,9 +11,10 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnDestroy {
   shopImage = 'images/pexels-n-voitkevich-6214471.jpg'
   registerForm: FormGroup;
+  authSubscription$: any;
 
   constructor(private authService: AuthService, private router: Router) {
     this.registerForm = new FormGroup({
@@ -27,7 +28,7 @@ export class RegisterComponent {
   
   submitRegistration(): void {
     if (this.registerForm.valid) {
-      this.authService.register(this.registerForm.value).subscribe({
+      this.authSubscription$ = this.authService.register(this.registerForm.value).subscribe({
         next: (res) => {
           console.log(res);
           this.router.navigate(['/home']);
@@ -57,6 +58,12 @@ export class RegisterComponent {
         control.markAsTouched();
       }
     });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription$) {
+      this.authSubscription$.unsubscribe();
     }
   }
 

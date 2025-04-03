@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
@@ -11,9 +11,10 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   shopImage = 'images/pexels-n-voitkevich-6214471.jpg'
   loginForm: FormGroup;
+  authSubscription$: any;
 
   constructor(private authService: AuthService, private router: Router) {
     this.loginForm = new FormGroup({
@@ -41,7 +42,7 @@ export class LoginComponent {
 
   submitLogin(): void {
     if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value).subscribe({
+      this.authSubscription$ = this.authService.login(this.loginForm.value).subscribe({
         next: (res) => {
           this.router.navigate(['/home']);
         },
@@ -67,6 +68,12 @@ export class LoginComponent {
           control.markAsTouched();
         }
       });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.authSubscription$) {
+      this.authSubscription$.unsubscribe();
     }
   }
 
