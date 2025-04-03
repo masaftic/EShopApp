@@ -3,8 +3,8 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { AuthenticationInterceptor } from './pages/interceptors/auth-interceptor';
-import { RefreshTokenInterceptor } from './pages/interceptors/refresh-token-interceptor';
+import { AuthenticationInterceptor } from './interceptors/auth-interceptor';
+import { RefreshTokenInterceptor } from './interceptors/refresh-token-interceptor';
 
 
 export const appConfig: ApplicationConfig = {
