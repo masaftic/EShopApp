@@ -1,7 +1,7 @@
 import { HttpEvent, HttpHandlerFn, HttpRequest } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { catchError, Observable, switchMap } from "rxjs";
-import { AuthService } from "../../auth/auth.service";
+import { AuthService } from "../auth/auth.service";
 
 export const RefreshTokenInterceptor = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
     req = req.clone({ withCredentials: true });
