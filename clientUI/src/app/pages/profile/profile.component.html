@@ -1,4 +1,4 @@
-<div class="container mt-5">
+<div class="container mt-5 min-vh-100">
   <div class="card">
     <div class="card-header">
       <h3>Profile</h3>
@@ -6,8 +6,8 @@
     <div class="card-body">
       <div *ngIf="user">
         <p><strong>Email:</strong> {{user.email}}</p>
-        <p><strong>First Name:</strong> {{user.given_name}}</p>
-        <p><strong>Last Name:</strong> {{user.family_name}}</p>
+        <p><strong>First Name:</strong> {{user.firstName}}</p>
+        <p><strong>Last Name:</strong> {{user.lastName}}</p>
         <button class="btn btn-danger" (click)="logout()">Logout</button>
       </div>
     </div>

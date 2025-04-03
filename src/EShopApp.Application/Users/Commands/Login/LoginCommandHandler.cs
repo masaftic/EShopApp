@@ -4,20 +4,25 @@ using ErrorOr;
 using EShopApp.Domain.Entities;
 using EShopApp.Application.Users.DTOs;
 
-namespace EShopApp.Application.Users.Queries.Login;
+namespace EShopApp.Application.Users.Commands.Login;
 
-public class LoginQueryHandler : IRequestHandler<LoginQuery, ErrorOr<AuthenticationResponse>>
+public record LoginCommand(
+    string Email,
+    string Password) : IRequest<ErrorOr<AuthenticationResponse>>;
+
+
+public class LoginCommandHandler : IRequestHandler<LoginCommand, ErrorOr<AuthenticationResponse>>
 {
     private readonly IIdentityService _identityService;
     private readonly IApplicationDbContext _dbContext;
 
-    public LoginQueryHandler(IIdentityService identityService, IApplicationDbContext dbContext)
+    public LoginCommandHandler(IIdentityService identityService, IApplicationDbContext dbContext)
     {
         _identityService = identityService;
         _dbContext = dbContext;
     }
 
-    public async Task<ErrorOr<AuthenticationResponse>> Handle(LoginQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<AuthenticationResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var loginResult = await _identityService.SignInAsync(request.Email, request.Password);
         if (loginResult.IsError)

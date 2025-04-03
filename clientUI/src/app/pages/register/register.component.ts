@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule, ValidatorFn, AbstractControl } from '@angular/forms';
-import { AuthService } from '../auth/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -30,7 +30,6 @@ export class RegisterComponent {
       this.authService.register(this.registerForm.value).subscribe({
         next: (res) => {
           console.log(res);
-          localStorage.setItem('token', res.token);
           this.router.navigate(['/home']);
         },
         error: (err) => {

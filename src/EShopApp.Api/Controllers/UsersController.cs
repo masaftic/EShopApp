@@ -1,8 +1,9 @@
 using System.Security.Claims;
+using EShopApp.Application.Users.Commands;
+using EShopApp.Application.Users.Commands.Login;
 using EShopApp.Application.Users.Commands.Register;
 using EShopApp.Application.Users.Queries;
 using EShopApp.Application.Users.Queries.Details;
-using EShopApp.Application.Users.Queries.Login;
 using EShopApp.Domain.Errors;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,9 +39,10 @@ public class UsersController : ApiController
         return result.Match(Ok, HandleErrors);
     }
 
+
     [AllowAnonymous]
-    [HttpGet("login")]
-    public async Task<IActionResult> Login([FromBody] LoginQuery request)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginCommand request)
     {
         var result = await _mediator.Send(request);
 
@@ -54,8 +56,9 @@ public class UsersController : ApiController
         return result.Match(Ok, HandleErrors);
     }
 
+
     [AllowAnonymous]
-    [HttpGet("refresh-token")]
+    [HttpPost("refresh-token")]
     public async Task<IActionResult> LoginWithRefresh([FromBody] LoginWithRefreshTokenQuery request)
     {
         var result = await _mediator.Send(request);
@@ -79,11 +82,29 @@ public class UsersController : ApiController
         return result.Match(Ok, HandleErrors);
     }
 
+
     [Authorize(Roles = "Admin")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUserById(int id)
     {
         var result = await _mediator.Send(new UserDetailsQuery(id));
         return result.Match(Ok, HandleErrors);
+    }
+
+
+    [Authorize]
+    [HttpDelete("revoke-token")]
+    public async Task<IActionResult> RevokeToken()
+    {
+        var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (userId is null)
+        {
+            _logger.LogCritical("Authorize attribute failed.");
+            return Unauthorized();
+        }
+
+        var request = new RevokeTokenCommand(int.Parse(userId));
+        var result = await _mediator.Send(request);
+        return result.Match(success => NoContent(), HandleErrors);
     }
 }
