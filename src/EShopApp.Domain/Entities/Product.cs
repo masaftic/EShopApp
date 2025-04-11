@@ -52,7 +52,7 @@ public class Product : Entity<int>
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be greater than zero");
 
-        // SoldAmount += quantity;
+        SoldAmount += quantity;
         UpdatedAt = DateTime.UtcNow;
     }
 

@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const result = await response.json();
         if (response.ok) {
-            token = result.token;
+            token = result.accessToken;
             document.getElementById('login-result').textContent = 'Login successful!';
             loginForm.style.display = 'none';
             productsSection.style.display = 'block';
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     clearCartButton.addEventListener('click', async () => {
         const response = await fetch(`${SERVER_URL}/api/cart/clear-cart`, {
-            method: 'POST',
+            method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

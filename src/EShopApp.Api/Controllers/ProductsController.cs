@@ -5,7 +5,6 @@ using EShopApp.Application.Products.Commands.Delete;
 using EShopApp.Application.Products.Commands.Update;
 using EShopApp.Application.Products.Queries;
 using EShopApp.Application.Products.Queries.GetProductById;
-using EShopApp.Application.Products.Queries.GetProducts;
 using Mapster;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -155,7 +154,7 @@ public class ProductsController : ApiController
             productId,
             request.Comment,
             request.Rating);
-            
+
         var result = await _mediator.Send(command);
 
         return result.Match(

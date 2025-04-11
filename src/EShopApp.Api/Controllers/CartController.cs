@@ -35,7 +35,7 @@ public class CartController : ApiController
         return result.Match(Ok, HandleErrors);
     }
 
-    [HttpPost("clear-cart")]
+    [HttpDelete("clear-cart")]
     public async Task<IActionResult> ClearCart()
     {
         var clearCartCommand = new ClearCartCommand();

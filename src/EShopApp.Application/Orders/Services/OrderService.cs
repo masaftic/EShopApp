@@ -1,9 +1,9 @@
 using EShopApp.Application.Common.Interfaces.Persistence;
+using EShopApp.Application.Payments.Services;
 using EShopApp.Domain.Entities;
-using EShopApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace EShopApp.Application.Payments.Services;
+namespace EShopApp.Application.Orders.Services;
 
 public class OrderService : IOrderService
 {
@@ -23,6 +23,13 @@ public class OrderService : IOrderService
         order.AddItems(items);
 
         var productIds = reservation.ReservationItems.Select(ri => ri.ProductId).ToList();
+        var products = await _dbContext.Products.Where(p => productIds.Contains(p.Id)).ToListAsync(cancellationToken: cancellationToken);
+
+        foreach (var product in products)
+        {
+            product.IncreaseSoldAmount(reservation.ReservationItems.First(ri => ri.ProductId == product.Id).Quantity);
+        }
+
         var inventories = await _dbContext.Inventories
             .Where(i => productIds.Contains(i.ProductId))
             .ToDictionaryAsync(i => i.ProductId, i => i, cancellationToken);
