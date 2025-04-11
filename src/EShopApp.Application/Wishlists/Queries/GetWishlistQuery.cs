@@ -23,10 +23,7 @@ public class GetWishlistHandler(IApplicationDbContext dbContext, ICurrentUserSer
             .Include(w => w.WishlistItems)
             .Where(w => w.UserId == userId)
             .ProjectToType<WishlistDto>()
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (wishlist is null)
-            return Error.NotFound("Wishlist.NotFound", "Wishlist not found");
+            .SingleAsync(cancellationToken);
 
         var wishlistDto = wishlist.Adapt<WishlistDto>();
         return wishlistDto;

@@ -1,5 +1,6 @@
 namespace EShopApp.Domain.Entities;
 
+using System;
 using ErrorOr;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
@@ -28,13 +29,21 @@ public class Wishlist : Entity<int>
         return Result.Success;
     }
 
-    public void RemoveItem(int productId)
+    public ErrorOr<Deleted> RemoveItem(int productId)
     {
         var item = WishlistItems.FirstOrDefault(item => item.ProductId == productId);
-        if (item != null)
+        if (item is null)
         {
-            WishlistItems.Remove(item);
+            return DomainErrors.Wishlist.ItemNotFound(productId);
         }
+
+        WishlistItems.Remove(item);
+        return Result.Deleted;
+    }
+
+    public void Clear()
+    {
+        WishlistItems.Clear();
     }
 }
 

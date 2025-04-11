@@ -34,6 +34,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
         var cart = new Cart(user.Id);
         await _dbContext.Carts.AddAsync(cart, cancellationToken);
 
+        var wishlist = new Wishlist(user.Id);
+        await _dbContext.Wishlists.AddAsync(wishlist, cancellationToken);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return new AuthenticationResponse(
