@@ -7,6 +7,19 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
 {
     public RegisterCommandValidator(ApplicationIdentityOptions identityOptions)
     {
+        RuleFor(x => x.FirstName)
+            .NotEmpty().WithMessage("First name is required.")
+            .MaximumLength(50).WithMessage("First name must not exceed 50 characters.");
+        
+        RuleFor(x => x.LastName)
+            .NotEmpty().WithMessage("Last name is required.")
+            .MaximumLength(50).WithMessage("Last name must not exceed 50 characters.");
+        
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required.")
+            .EmailAddress().WithMessage("Invalid email format.")
+            .MaximumLength(256).WithMessage("Email must not exceed 256 characters.");
+
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required.")
             .MinimumLength(identityOptions.PasswordRequiredLength).WithMessage($"Password must be at least {identityOptions.PasswordRequiredLength} characters.")

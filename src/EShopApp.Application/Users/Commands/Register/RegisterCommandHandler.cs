@@ -26,18 +26,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
             return authResult.Errors;
 
         var refreshToken = new RefreshToken(
-            authResult.Value.AccessToken,
+            authResult.Value.RefreshToken,
             authResult.Value.UserId,
             DateTime.UtcNow.AddDays(7));
+        await _dbContext.RefreshTokens.AddAsync(refreshToken, cancellationToken);
 
         var cart = new Cart(user.Id);
-
-        await _dbContext.RefreshTokens.AddAsync(refreshToken, cancellationToken);
         await _dbContext.Carts.AddAsync(cart, cancellationToken);
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return new AuthenticationResponse(
             authResult.Value.AccessToken,
-            refreshToken.Token);
+            authResult.Value.RefreshToken);
     }
 }
