@@ -1,4 +1,5 @@
 using EShopApp.Api.Models.Requests;
+using EShopApp.Application.Products.Commands;
 using EShopApp.Application.Products.Commands.Add;
 using EShopApp.Application.Products.Commands.Delete;
 using EShopApp.Application.Products.Commands.Update;
@@ -73,5 +74,49 @@ public class ProductsController : ApiController
         var result = await _mediator.Send(command);
 
         return result.Match(Ok, HandleErrors);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("{productId:int}/images")]
+    public async Task<IActionResult> AddImageToProduct(int productId, [FromForm(Name = "image")] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("File is required.");
+
+        if (file.Length > 5 * 1024 * 1024) // 5 MB limit
+            return BadRequest("File size exceeds the limit of 5 MB.");
+
+        var allowedImageTypes = new List<string> {"image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp", "image/tiff" };
+
+        if (!allowedImageTypes.Contains(file.ContentType))
+            return BadRequest("Invalid file type. Only JPEG, PNG, GIF, WEBP, BMP, and TIFF images are allowed.");
+
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        var command = new AddImageToProductCommand(productId, file.FileName, file.ContentType, memoryStream.ToArray());
+
+        var result = await _mediator.Send(command);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{productId:int}/images/{imageId:int}/main")]
+    public async Task<IActionResult> SetImageAsMain(int productId, int imageId)
+    {
+        var command = new SetImageAsMainCommand(productId, imageId);
+        var result = await _mediator.Send(command);
+
+        return result.Match(res => NoContent(), HandleErrors);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{productId:int}/images/{imageId:int}")]
+    public async Task<IActionResult> DeleteImage(int productId, int imageId)
+    {
+        var command = new RemoveImageFromProductCommand(productId, imageId);
+        var result = await _mediator.Send(command);
+
+        return result.Match(res => NoContent(), HandleErrors);
     }
 }

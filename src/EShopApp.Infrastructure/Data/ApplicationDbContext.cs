@@ -14,6 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     }
 
     public DbSet<Product> Products { get; init; }
+    public DbSet<ProductImage> ProductImages { get; init; }
     public DbSet<Category> Categories { get; init; }
     public DbSet<Cart> Carts { get; init; }
     public DbSet<CartItem> CartItems { get; init; }
