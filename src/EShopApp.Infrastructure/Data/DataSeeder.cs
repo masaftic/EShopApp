@@ -58,51 +58,17 @@ public class DataSeeder
         if (await _context.Categories.AnyAsync())
             return;
 
-        var categories = new List<Category>();
+        var categories = new List<Category>
+        {
+            new("my category")
+        };
 
-        // var categoryDefinitions = new Dictionary<string, string[]>
-        // {
-        //     { "Electronics", ["Computers", "Smartphones", "Cameras"] },
-        //     { "Books", ["Fiction", "Non-Fiction", "Children's Books"] },
-        //     { "Clothing", ["Men", "Women", "Kids"] },
-        //     { "Home & Kitchen", ["Furniture", "Appliances", "Decor"] },
-        //     { "Sports", ["Gym Equipment", "Outdoor", "Team Sports"] },
-        //     { "Beauty", ["Skincare", "Makeup", "Haircare"] },
-        //     { "Toys", ["Educational", "Action Figures", "Dolls"] },
-        //     { "Automotive", ["Parts", "Accessories", "Tools"] },
-        //     { "Garden", ["Plants", "Tools", "Outdoor Lighting"] },
-        //     { "Health", ["Supplements", "Medical Supplies", "Fitness"] },
-        //     // Add more parent-subcategory relationships as needed
-        // };
-
-        // var id = 1; // simulating Id
-
-        // foreach (var (name, children) in categoryDefinitions)
-        // {
-        //     var root = new Category(name);
-        //     var rootPath = $"/{id}";
-        //     root.SetIdAndPath(id, rootPath);
-
-        //     categories.Add(root);
-
-        //     foreach (var t in children)
-        //     {
-        //         id += 1;
-        //         var child = new Category(t);
-        //         child.SetIdAndPath(id, $"{rootPath}/{id}");
-
-        //         categories.Add(child);
-        //     }
-
-        //     id += 1;
-        // }
-
-        categories.Add(new Category("my category"));
-
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; i++)
+        {
             Category? parent = Random.Shared.NextDouble() < 0.2 ? null : categories[Random.Shared.Next(categories.Count)];
 
-            var category = new CategoryFaker(parent).Generate();  
+            var category = new CategoryFaker(parent).Generate();
+
             categories.Add(category);
         }
 
@@ -115,39 +81,15 @@ public class DataSeeder
         }
 
         await _context.SaveChangesAsync();
-
-        // await using var transaction = await _context.Database.BeginTransactionAsync();
-
-        // try
-        // {
-        //     // Enable IDENTITY_INSERT
-        //     await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Categories ON");
-
-        //     // Insert categories with explicit IDs
-        //     await _context.Categories.AddRangeAsync(categories);
-        //     await _context.SaveChangesAsync();
-
-        //     // Disable IDENTITY_INSERT
-        //     await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT dbo.Categories OFF");
-
-        //     // Commit the transaction
-        //     await transaction.CommitAsync();
-        // }
-        // catch
-        // {
-        //     // Rollback the transaction in case of an error
-        //     await transaction.RollbackAsync();
-        //     throw;
-        // }
     }
 
-    // There must be Product and Inventory parameterless constructors before running this function. 
+
     private async Task SeedProductsAndInventoriesAsync(int count)
     {
         if (await _context.Products.AnyAsync())
             return;
 
-        var categories = await _context.Categories.ToListAsync();  
+        var categories = await _context.Categories.ToListAsync();
 
         var products = new List<Product>();
         var inventories = new List<Inventory>();
@@ -180,9 +122,9 @@ class ProductFaker : Faker<Product>
     public ProductFaker(Category category)
     {
         CustomInstantiator(f => new Product(
-            name: f.Name.FullName(),
+            name: f.Commerce.ProductName(),
             price: f.Random.Decimal(1, 100),
-            description: f.Lorem.Sentence(),
+            description: f.Commerce.ProductDescription(),
             category: category));
     }
 }
@@ -205,11 +147,11 @@ public class CategoryFaker : Faker<Category>
     {
         if (parent is null)
         {
-            CustomInstantiator(f => new Category($"{f.Commerce.Categories(1)[0]}-{f.Random.AlphaNumeric(5)}"));
+            CustomInstantiator(f => new Category($"{f.Commerce.Categories(1)[0]}"));
         }
-        else 
+        else
         {
-            CustomInstantiator(f => new Category($"{f.Commerce.Categories(1)[0]}-{f.Random.AlphaNumeric(5)}", parent));
+            CustomInstantiator(f => new Category($"{f.Commerce.Categories(1)[0]}", parent));
         }
     }
 }
