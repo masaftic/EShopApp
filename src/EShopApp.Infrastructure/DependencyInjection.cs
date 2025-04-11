@@ -17,6 +17,9 @@ using Stripe;
 using EShopApp.Infrastructure.Identity;
 using EShopApp.Infrastructure.Payment;
 using EShopApp.Infrastructure.Data.Identity;
+using Amazon.S3;
+using Dumpify;
+using EShopApp.Infrastructure.ImageStorage;
 
 namespace EShopApp.Infrastructure;
 
@@ -30,14 +33,15 @@ public static class DependencyInjection
 
         services.Configure<StripeApiCredentials>(configuration.GetSection(StripeApiCredentials.SectionName));
 
-        AddServices(services);
+        AddServices(services, configuration);
         AddPersistence(services, configuration);
         AddAuth(services, configuration);
 
         return services;
     }
 
-    private static void AddServices(IServiceCollection services)
+    private static void AddServices(IServiceCollection services, IConfiguration configuration)
+
     {
         services.AddScoped<IIdentityService, Identity.IdentityService>();
         services.AddScoped<DataSeeder>();
@@ -46,6 +50,27 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddHostedService<ExpiredReservationBackgroundService>();
         services.AddHostedService<ExpiredRefreshTokensBackgroundService>();
+
+        services.Configure<S3Settings>(configuration.GetSection("S3Settings"));
+        services.AddSingleton<IAmazonS3>(sp =>
+        {
+            var s3Settings = sp.GetRequiredService<IOptions<S3Settings>>().Value;
+            var amazonS3Config = new AmazonS3Config
+            {
+                RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(s3Settings.Region),
+                HttpClientFactory = new AmazonS3HttpClientFactory(new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                })
+            };
+
+            var credentials = new Amazon.Runtime.BasicAWSCredentials(s3Settings.AccessKey, s3Settings.SecretKey);
+
+
+
+            return new AmazonS3Client(credentials, amazonS3Config);
+        });
+        services.AddScoped<IImageStorageService, S3ImageStorageService>();
     }
 
     private static void AddPersistence(IServiceCollection services, IConfiguration configuration)

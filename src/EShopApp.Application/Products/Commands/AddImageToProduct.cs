@@ -10,7 +10,7 @@ using MediatR;
 
 namespace EShopApp.Application.Products.Commands;
 
-public record AddImageToProductCommand(int ProductId, string FileName, string ContentType, byte[] BinaryContent) : IRequest<ErrorOr<ProductImageDto>>;
+public record AddImageToProductCommand(int ProductId, string FileName, string ContentType, byte[] BinaryContent) : IRequest<ErrorOr<Created>>;
 
 
 public class AddImageToProductCommandValidator : AbstractValidator<AddImageToProductCommand>
@@ -42,7 +42,7 @@ public class AddImageToProductCommandValidator : AbstractValidator<AddImageToPro
 }
 
 
-public class AddImageToProductCommandHandler : IRequestHandler<AddImageToProductCommand, ErrorOr<ProductImageDto>>
+public class AddImageToProductCommandHandler : IRequestHandler<AddImageToProductCommand, ErrorOr<Created>>
 {
     private readonly IImageStorageService _imageStorageService;
     private readonly IApplicationDbContext _dbContext;
@@ -53,7 +53,7 @@ public class AddImageToProductCommandHandler : IRequestHandler<AddImageToProduct
         _dbContext = dbContext;
     }
 
-    public async Task<ErrorOr<ProductImageDto>> Handle(AddImageToProductCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<Created>> Handle(AddImageToProductCommand request, CancellationToken cancellationToken)
     {
         var product = await _dbContext.Products.FindAsync([request.ProductId], cancellationToken);
         if (product is null)
@@ -72,7 +72,7 @@ public class AddImageToProductCommandHandler : IRequestHandler<AddImageToProduct
         product.AddImage(productImage);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return productImage.Adapt<ProductImageDto>();
+        return Result.Created;
     }
 }
 

@@ -1,3 +1,4 @@
+using System.Dynamic;
 using ErrorOr;
 using EShopApp.Domain.Errors;
 
@@ -9,7 +10,9 @@ public class Product : Entity<int>
     public Inventory Inventory { get; set; } = null!;
     public decimal Price { get; private set; }
     public string Description { get; private set; } = string.Empty;
-
+    public int SoldAmount { get; set; }
+    public ICollection<ProductReview> Reviews { get; private set; } = [];
+    public double AverageRating { get; set; }
     public int CategoryId { get; private set; }
     public Category Category { get; private set; } = null!;
     public ICollection<ProductImage> Images { get; private set; } = [];
@@ -29,6 +32,7 @@ public class Product : Entity<int>
         Name = name;
         Price = price;
         Description = description;
+        AverageRating = 0;
         Category = category ?? throw new ArgumentException("Product category is required.");
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
@@ -52,12 +56,27 @@ public class Product : Entity<int>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    // public void AddReview(User user, int rating, string comment)
-    // {
-    //     var review = new Review(Id, user.Id, comment, rating);
-    //     Reviews.Add(review);
-    //     UpdatedAt = DateTime.UtcNow;
-    // }
+    public void AddReview(ProductReview review)
+    {
+        Reviews.Add(review);
+        AverageRating = Reviews.Average(r => r.Rating);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public ErrorOr<Deleted> RemoveReview(int reviewId)
+    {
+        var review = Reviews.FirstOrDefault(r => r.Id == reviewId);
+        if (review is null)
+            return DomainErrors.Product.ReviewNotFound;
+
+        Reviews.Remove(review);
+        AverageRating = Reviews.Count > 0
+            ? Reviews.Average(r => r.Rating)
+            : 0;
+
+        UpdatedAt = DateTime.UtcNow;
+        return Result.Deleted;
+    }
 
     public void AddImage(ProductImage image)
     {
@@ -111,4 +130,5 @@ public class Product : Entity<int>
             UpdatedAt = DateTime.UtcNow;
         }
     }
+
 }

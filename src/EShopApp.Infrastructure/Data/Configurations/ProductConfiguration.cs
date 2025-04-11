@@ -21,7 +21,21 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasMaxLength(255)
             .IsRequired();
 
-
         builder.Property(p => p.Price).HasColumnType("decimal(18,2)");
+
+        builder.HasMany(p => p.Images)
+            .WithOne(i => i.Product)
+            .HasForeignKey(i => i.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.Property(p => p.Description)
+            .HasMaxLength(1000)
+            .IsRequired();
+        
+        builder.Property(p => p.SoldAmount).HasDefaultValue(0);
+
+        builder.Property(p => p.CreatedAt).HasDefaultValueSql("GETDATE()");
+
+        builder.Property(p => p.UpdatedAt).HasDefaultValueSql("GETDATE()");
     }
 }

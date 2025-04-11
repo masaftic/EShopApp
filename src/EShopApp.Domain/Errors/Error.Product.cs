@@ -13,5 +13,9 @@ public static partial class DomainErrors
             description: "Product has too many images. Maximum is 5.");
         
         public static Error ImageNotFound => Error.NotFound("Product.Image.NotFound", "product image not found");
+
+        public static Error ReviewNotFound => Error.NotFound("Product.Review.NotFound", "product review not found");
+
+        public static Error ReviewAlreadyExists => Error.Conflict("Product.Review.AlreadyExists", "product review already exists");
     }
 }

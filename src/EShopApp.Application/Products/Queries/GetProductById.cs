@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShopApp.Application.Products.Queries.GetProductById;
 
+public record GetProductByIdQuery(
+    int Id) : IRequest<ErrorOr<ProductDto>>;
+
 public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ErrorOr<ProductDto>>
 {
     private readonly IApplicationDbContext _dbContext;

@@ -17,5 +17,12 @@ public class ProductMapping : IRegister
             .Map(dest => dest.ImageUrl, src => src.ImageKey)
             .Map(dest => dest.OriginalFileName, src => src.OriginalFileName)
             .Map(dest => dest.IsMain, src => src.IsMain);
+        
+        config.NewConfig<ProductReview, ProductReviewDto>()
+            .Map(dest => dest.UserId, src => src.UserId)
+            .Map(dest => dest.UserName, src => src.User.Email)
+            .Map(dest => dest.Comment, src => src.Comment)
+            .Map(dest => dest.Rating, src => src.Rating)
+            .Map(dest => dest.CreatedAt, src => src.CreatedAt);
     }
 }
