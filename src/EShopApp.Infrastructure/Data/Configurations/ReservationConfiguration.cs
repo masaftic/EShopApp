@@ -31,5 +31,7 @@ public class ReservationItemConfiguration : IEntityTypeConfiguration<Reservation
             .WithMany()
             .HasForeignKey(ri => ri.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Property(ri => ri.UnitPrice).HasPrecision(18, 2);
     }
 }

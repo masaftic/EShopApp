@@ -17,5 +17,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Domain.Entities.Pay
         builder.HasOne(p => p.Order)
             .WithOne(o => o.Payment)
             .HasForeignKey<Order>(o => o.PaymentId);
+        
+        builder.Property(p => p.Amount).HasPrecision(18, 2);
     }
 }
