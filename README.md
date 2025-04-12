@@ -16,8 +16,9 @@ The application provides comprehensive features for an e-commerce platform:
 - **User Management:** Provides user registration, login with token-based authentication (including refresh and revoke token mechanisms), and retrieval of user information (all users, specific user by ID, current user).
 - **Wishlist Management:** Users can add items to a personal wishlist, view their wishlist, remove items, clear the wishlist, and check if a specific product is already in their wishlist.
 - **Payment Integration:** Includes webhook support for payment gateways like Stripe to handle payment notifications.
+- **Image Storage:** Utilizes Amazon S3 for storing product images, ensuring scalability and reliability.
 
-For a detailed list of API endpoints, see [API_ENDPOINTS.md](./API_ENDPOINTS.md).
+For a detailed list of API endpoints, see [API_ENDPOINTS.md](./API_ENDPOINTS.md). Or you can check the Swagger UI at `http://localhost:5555/swagger` after running the application.
 
 ## Technologies Used
 
