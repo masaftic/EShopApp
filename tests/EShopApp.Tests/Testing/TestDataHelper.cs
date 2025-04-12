@@ -9,7 +9,7 @@ public static class TestDataHelper
 {
     public static async Task<User> CreateTestUser(ApplicationDbContext context)
     {
-        var user = new User("Test", "User", "test@example.com", new Address("st", "city", "country"));
+        var user = new User("Test", "User", "test@example.com");
         context.DomainUsers.Add(user);
         await context.SaveChangesAsync();
         return user;
