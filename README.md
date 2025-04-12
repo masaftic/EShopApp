@@ -6,51 +6,18 @@ EShopApp is a .NET 9.0 web application for online shopping. It provides a range 
 
 ## Features
 
-- **Cart Management:**
-  - Add items to cart (`POST /api/Cart/add-to-cart`)
-    - View cart (`GET /api/Cart`)
-    - Clear cart (`DELETE /api/Cart/clear-cart`)
-    - Checkout (`POST /api/Cart/checkout`)
-- **Category Management:**
-  - Retrieve all categories (`GET /api/Categories`)
-  - Get a specific category by ID (`GET /api/Categories/{categoryId}`)
-  - Retrieve category tree, descendants, subcategories, and breadcrumbs.
-- **Inventory Management:**
-  - Retrieve all inventories (`GET /api/Inventories`)
-  - Get a specific inventory by ID (`GET /api/Inventories/{inventoryId}`)
-  - Get low stock inventories (`GET /api/Inventories/low-stock`)
-  - Adjust inventory (`POST /api/Inventories/{inventoryId}/adjust`)
-- **Order Management:**
-  - Get order by ID (`GET /api/Orders/{id}`)
-  - Get current user's orders (`GET /api/Orders/my`)
-- **Product Management:**
-  - Retrieve all products (`GET /api/Products`)
-  - Get best selling products (`GET /api/Products/best-selling`)
-  - Get top rated products (`GET /api/Products/top-rated`)
-  - Filter products (`GET /api/Products/filter`)
-  - Get product by ID (`GET /api/Products/{productId}`)
-  - Update product (`PUT /api/Products/{id}`)
-  - Add image to product (`POST /api/Products/{productId}/images`)
-  - Set main image for product (`PUT /api/Products/{productId}/images/{imageId}/main`)
-  - Delete product image (`DELETE /api/Products/{productId}/images/{imageId}`)
-  - Add review to product (`POST /api/Products/{productId}/reviews`)
-  - Update product review (`PUT /api/Products/{productId}/reviews/{reviewId}`)
-- **User Management:**
-  - Retrieve all users (`GET /api/Users`)
-  - Register user (`POST /api/Users/register`)
-  - Login user (`POST /api/Users/login`)
-  - Refresh token (`POST /api/Users/refresh-token`)
-  - Get current user's information (`GET /api/Users/me`)
-  - Get user by ID (`GET /api/Users/{id}`)
-  - Revoke token (`DELETE /api/Users/revoke-token`)
-- **Wishlist Management:**
-  - View wishlist (`GET /api/Wishlist`)
-  - Add item to wishlist (`POST /api/Wishlist/add-item`)
-  - Remove item from wishlist (`DELETE /api/Wishlist/remove-item/`)
-  - Clear wishlist (`DELETE /api/Wishlist/clear`)
-  - Check if item is in wishlist (`GET /api/Wishlist/check-item/`)
-- **Payment Webhooks:**
-  - Stripe webhook endpoint (`POST /api/webhooks/stripe`)
+The application provides comprehensive features for an e-commerce platform:
+
+- **Cart Management:** Users can add products to their shopping cart, view the cart contents, clear the cart, and proceed to checkout.
+- **Category Management:** Supports retrieving categories, including hierarchical structures like trees, descendants, subcategories, and breadcrumbs for navigation.
+- **Inventory Management:** Allows administrators to view inventory levels, identify low-stock items, and adjust stock quantities.
+- **Order Management:** Users can view their past orders, and administrators can retrieve specific order details.
+- **Product Management:** Includes functionalities to list products (all, best-selling, top-rated), filter products based on criteria, view product details, update product information, manage product images (add, set main, delete), and manage product reviews (add, update).
+- **User Management:** Provides user registration, login with token-based authentication (including refresh and revoke token mechanisms), and retrieval of user information (all users, specific user by ID, current user).
+- **Wishlist Management:** Users can add items to a personal wishlist, view their wishlist, remove items, clear the wishlist, and check if a specific product is already in their wishlist.
+- **Payment Integration:** Includes webhook support for payment gateways like Stripe to handle payment notifications.
+
+For a detailed list of API endpoints, see [API_ENDPOINTS.md](./API_ENDPOINTS.md).
 
 ## Technologies Used
 
@@ -59,6 +26,7 @@ EShopApp is a .NET 9.0 web application for online shopping. It provides a range 
 - ASP.NET Core Web API
 - Entity Framework Core
 - MediatR
+- ErrorOr
 - Mapster
 - FluentValidation
 - xUnit
