@@ -168,8 +168,6 @@ class ProductFaker : Faker<Product>
                     isMain: f.Random.Bool()));
             }
 
-            p.Images.First().SetAsMain();
-
             return p;
         });
     }
