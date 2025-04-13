@@ -43,6 +43,14 @@ public class DataSeeder
             var adminUser = new ApplicationUser(admin);
             await _userManager.CreateAsync(adminUser, "Admin123!");
             await _userManager.AddToRoleAsync(adminUser, "Admin");
+            
+            var cart = new Cart(admin.Id);
+            var wishlist = new Wishlist(admin.Id);
+            var address = new Address("456 Elm Street", "Suite 200", "Los Angeles", "CA", "12345");
+            admin.UpdateAddress(address);
+            await _context.AddAsync(wishlist);
+            await _context.AddAsync(cart);
+            await _context.SaveChangesAsync();
         }
     }
 
@@ -121,11 +129,27 @@ class ProductFaker : Faker<Product>
 {
     public ProductFaker(Category category)
     {
-        CustomInstantiator(f => new Product(
+        CustomInstantiator(f =>
+        {
+            var p = new Product(
             name: f.Commerce.ProductName(),
             price: f.Random.Decimal(1, 100),
             description: f.Commerce.ProductDescription(),
-            category: category));
+            category: category);
+
+            p.IncreaseSoldAmount(f.Random.Number(1, 100));
+
+            foreach (var _ in Enumerable.Range(0, f.Random.Number(1, 5)))
+            {
+                p.AddReview(new ProductReview(
+                    productId: p.Id,
+                    userId: 1,
+                    comment: f.Lorem.Sentence(),
+                    rating: f.Random.Number(1, 5)));
+            }
+
+            return p;
+        });
     }
 }
 
