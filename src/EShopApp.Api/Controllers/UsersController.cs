@@ -23,12 +23,6 @@ public class UsersController : ApiController
         _logger = logger;
     }
 
-    [AllowAnonymous]
-    [HttpGet]
-    public IActionResult Get()
-    {
-        return Ok("Hello World!");
-    }
 
 
     [AllowAnonymous]
@@ -69,17 +63,17 @@ public class UsersController : ApiController
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<IActionResult> GetCurrentUser()
+    public async Task<IActionResult> GetUserDetauls()
     {
-        var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (userId is null)
-        {
-            _logger.LogCritical("Authorize attribute failed.");
-            return Unauthorized();
-        }
-
-        var result = await _mediator.Send(new UserDetailsQuery(int.Parse(userId)));
+        var result = await _mediator.Send(new GetDetailsForUserQuery());
         return result.Match(Ok, HandleErrors);
+    }
+
+    [HttpPut("address")]
+    public async Task<IActionResult> UpdateAddress([FromBody] UpdateUserAddressCommand request)
+    {
+        var result = await _mediator.Send(request);
+        return result.Match(_ => NoContent(), HandleErrors);
     }
 
 
@@ -89,6 +83,22 @@ public class UsersController : ApiController
     {
         var result = await _mediator.Send(new UserDetailsQuery(id));
         return result.Match(Ok, HandleErrors);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var result = await _mediator.Send(new GetAllUsersQuery());
+        return result.Match(Ok, HandleErrors);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var result = await _mediator.Send(new DeleteUserCommand(id));
+        return result.Match(_ => NoContent(), HandleErrors);
     }
 
 

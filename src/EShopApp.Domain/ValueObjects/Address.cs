@@ -2,28 +2,38 @@ namespace EShopApp.Domain.ValueObjects;
 
 public class Address : ValueObject
 {
-    public string Street { get; private set; } = string.Empty;
-    public string City { get; private set; } = string.Empty;
-    public string Country { get; private set; } = string.Empty;
+    public string AddressLine1 { get; set; } = null!;
+    public string AddressLine2 { get; set; } = null!;
+    public string City { get; set; } = null!;
+    public string State { get; set; } = null!;
+    public string ZipCode { get; set; } = null!;
 
 
     private Address()
     {
     }
 
-    public Address(string street, string city, string country)
+    public Address(string addressLine1, string addressLine2, string city, string state, string zipCode)
     {
-        Street = street;
+        AddressLine1 = addressLine1;
+        AddressLine2 = addressLine2;
         City = city;
-        Country = country;
+        State = state;
+        ZipCode = zipCode;
     }
 
-    public override string ToString() => $"{Street}, {City}, {Country}";
+
+    public override string ToString()
+    {
+        return $"{AddressLine1}, {AddressLine2}, {City}, {State}, {ZipCode}";
+    }
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Street;
+        yield return AddressLine1;
+        yield return AddressLine2;
         yield return City;
-        yield return Country;
+        yield return State;
+        yield return ZipCode;
     }
 }

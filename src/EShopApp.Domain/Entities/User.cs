@@ -2,12 +2,12 @@ using EShopApp.Domain.ValueObjects;
 
 namespace EShopApp.Domain.Entities;
 
-public class User
+public class User : Entity<int>
 {
-    public int Id { get; set; }
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
     public Address? Address { get; private set; }
     public ICollection<Order> Orders { get; set; } = [];
     public Cart? Cart { get; set; }
@@ -24,5 +24,11 @@ public class User
         FirstName = firstName;
         LastName = lastName;
         Email = email;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateAddress(Address address)
+    {
+        Address = address;
     }
 }
