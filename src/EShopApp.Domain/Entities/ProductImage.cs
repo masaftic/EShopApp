@@ -12,7 +12,7 @@ public class ProductImage : Entity<int>
 
     private ProductImage() { } // EF Core
 
-    public ProductImage(string imageKey, string originalFileName, bool isMain = false)
+    public ProductImage(int productId, string imageKey, string originalFileName, bool isMain = false)
     {
         if (string.IsNullOrEmpty(imageKey))
             throw new ArgumentException("Image URL is required");

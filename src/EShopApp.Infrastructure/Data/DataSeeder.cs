@@ -43,7 +43,7 @@ public class DataSeeder
             var adminUser = new ApplicationUser(admin);
             await _userManager.CreateAsync(adminUser, "Admin123!");
             await _userManager.AddToRoleAsync(adminUser, "Admin");
-            
+
             var cart = new Cart(admin.Id);
             var wishlist = new Wishlist(admin.Id);
             var address = new Address("456 Elm Street", "Suite 200", "Los Angeles", "CA", "12345");
@@ -127,6 +127,17 @@ public class DataSeeder
 
 class ProductFaker : Faker<Product>
 {
+    private readonly List<string> imageKeys = [
+        "rachit-tank-2cFZ_FB08UM-unsplash.jpg",
+        "domino-studio-164_6wVEHfI-unsplash.jpg",
+        "ruslan-bardash-4kTbAMRAHtQ-unsplash.jpg",
+        "caroline-attwood-E1rH__X9SA0-unsplash.jpg",
+        "mohammad-metri-E-0ON3VGrBc-unsplash.jpg",
+        "c-d-x-PDX_a_82obo-unsplash.jpg",
+        "irene-kredenets-KStSiM1UvPw-unsplash.jpg",
+        "giorgio-trovato-K62u25Jk6vo-unsplash.jpg",
+    ];
+
     public ProductFaker(Category category)
     {
         CustomInstantiator(f =>
@@ -147,6 +158,17 @@ class ProductFaker : Faker<Product>
                     comment: f.Lorem.Sentence(),
                     rating: f.Random.Number(1, 5)));
             }
+
+            foreach (var _ in Enumerable.Range(0, f.Random.Number(1, 5)))
+            {
+                p.AddImage(new ProductImage(
+                    productId: p.Id,
+                    imageKey: $"product-images/{imageKeys[f.Random.Number(0, imageKeys.Count - 1)]}",
+                    originalFileName: f.System.FileName(),
+                    isMain: f.Random.Bool()));
+            }
+
+            p.Images.First().SetAsMain();
 
             return p;
         });

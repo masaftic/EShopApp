@@ -68,7 +68,7 @@ public class AddImageToProductCommandHandler : IRequestHandler<AddImageToProduct
         if (uploadResponse.IsError)
             return uploadResponse.Errors;
 
-        var productImage = new ProductImage(uploadResponse.Value, request.FileName);
+        var productImage = new ProductImage(product.Id, uploadResponse.Value, request.FileName);
         product.AddImage(productImage);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
