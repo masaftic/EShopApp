@@ -36,7 +36,7 @@ public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, E
 
         foreach (var image in product.Images)
         {
-            image.ImageUrl = _imageStorageService.GetPresignedUrl(image.ImageUrl, TimeSpan.FromMinutes(15));
+            image.ImageUrl = _imageStorageService.GetPresignedUrl(image.ImageUrl, ImageConstants.PresignedUrlExpiry);
         }
 
         return product;

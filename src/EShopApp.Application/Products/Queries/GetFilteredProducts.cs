@@ -1,6 +1,7 @@
 using ErrorOr;
 using EShopApp.Application.Common.DTOs;
 using EShopApp.Application.Common.Interfaces.Persistence;
+using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Products.DTOs;
 using FluentValidation;
 using Mapster;
@@ -17,7 +18,7 @@ public record GetFilteredProductsQuery(
     string? SortBy = "name",
     string? SortOrder = "asc",
     int PageNumber = 1,
-    int PageSize = 10) : IRequest<ErrorOr<PaginatedList<ProductDto>>>;
+    int PageSize = 10) : IRequest<ErrorOr<PaginatedList<ProductPreviewDto>>>;
 
 
 public class GetFilteredProductsQueryValidator : AbstractValidator<GetFilteredProductsQuery>
@@ -39,11 +40,11 @@ public class GetFilteredProductsQueryValidator : AbstractValidator<GetFilteredPr
         RuleFor(x => new { x.MinPrice, x.MaxPrice })
             .Must(x => !x.MinPrice.HasValue || !x.MaxPrice.HasValue || x.MinPrice <= x.MaxPrice)
             .WithMessage("MinPrice cannot be greater than MaxPrice.");
-        
+
         RuleFor(x => x.SortBy)
             .Must(x => string.IsNullOrEmpty(x) || x == "price" || x == "name")
             .WithMessage("SortBy is optional or can be 'price' or 'name'.");
-        
+
         RuleFor(x => x.SortOrder)
             .Must(x => string.IsNullOrEmpty(x) || x == "asc" || x == "desc")
             .WithMessage("SortOrder is optional or can be 'asc' or 'desc'.");
@@ -55,7 +56,7 @@ public class GetFilteredProductsQueryValidator : AbstractValidator<GetFilteredPr
         RuleFor(x => x.PageSize)
             .GreaterThanOrEqualTo(1).WithMessage("PageSize must be 1 or greater.")
             .LessThanOrEqualTo(100).WithMessage("PageSize cannot exceed 100.");
-        
+
         RuleFor(x => x.SearchTerm)
             .MaximumLength(100).WithMessage("SearchTerm cannot exceed 100 characters.");
 
@@ -63,23 +64,26 @@ public class GetFilteredProductsQueryValidator : AbstractValidator<GetFilteredPr
 }
 
 
-public class GetFilteredProductsQueryHandler 
-    : IRequestHandler<GetFilteredProductsQuery, ErrorOr<PaginatedList<ProductDto>>>
+public class GetFilteredProductsQueryHandler
+    : IRequestHandler<GetFilteredProductsQuery, ErrorOr<PaginatedList<ProductPreviewDto>>>
 {
     private readonly IApplicationDbContext _dbContext;
 
-    public GetFilteredProductsQueryHandler(IApplicationDbContext dbContext)
+    private readonly IImageStorageService _imageStorageService;
+    
+    public GetFilteredProductsQueryHandler(IApplicationDbContext dbContext, IImageStorageService imageStorageService)
     {
         _dbContext = dbContext;
+        _imageStorageService = imageStorageService;
     }
 
-    public async Task<ErrorOr<PaginatedList<ProductDto>>> Handle(
+    public async Task<ErrorOr<PaginatedList<ProductPreviewDto>>> Handle(
         GetFilteredProductsQuery request, CancellationToken cancellationToken)
     {
         var query = _dbContext.Products.AsQueryable();
 
         if (!string.IsNullOrEmpty(request.SearchTerm))
-            query = query.Where(p => p.Name.Contains(request.SearchTerm) || 
+            query = query.Where(p => p.Name.Contains(request.SearchTerm) ||
                                    p.Description.Contains(request.SearchTerm));
 
         if (request.CategoryId.HasValue)
@@ -93,7 +97,7 @@ public class GetFilteredProductsQueryHandler
 
         query = request.SortBy?.ToLower() switch
         {
-            "name" => request.SortOrder?.ToLower() == "desc" 
+            "name" => request.SortOrder?.ToLower() == "desc"
                 ? query.OrderByDescending(p => p.Name)
                 : query.OrderBy(p => p.Name),
             "price" => request.SortOrder?.ToLower() == "desc"
@@ -107,10 +111,20 @@ public class GetFilteredProductsQueryHandler
         var products = await query
             .Skip(request.PageSize * (request.PageNumber - 1))
             .Take(request.PageSize)
-            .ProjectToType<ProductDto>()
+            .Select(p => new ProductPreviewDto()
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                ThumbnailUrl = p.Images
+                    .Where(i => i.IsMain)
+                    .Select(i => _imageStorageService.GetPresignedUrl(i.ImageKey, ImageConstants.PresignedUrlExpiry))
+                    .FirstOrDefault(),
+                CategoryName = p.Category.Name,
+            })
             .ToListAsync(cancellationToken);
 
-        return new PaginatedList<ProductDto>(
+        return new PaginatedList<ProductPreviewDto>(
             products, totalCount, request.PageSize, request.PageNumber);
     }
 }
