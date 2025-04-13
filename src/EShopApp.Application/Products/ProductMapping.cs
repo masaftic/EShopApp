@@ -12,17 +12,38 @@ public class ProductMapping : IRegister
             .Map(dest => dest.Quantity, src => src.Inventory.Stock - src.Inventory.ReservedStock) // Code smell, TODO: refactor this
             .Map(dest => dest.CategoryName, src => src.Category.Name)
             .Map(dest => dest.Images, src => src.Images);
-        
+
         config.NewConfig<ProductImage, ProductImageDto>()
             .Map(dest => dest.ImageUrl, src => src.ImageKey)
             .Map(dest => dest.OriginalFileName, src => src.OriginalFileName)
             .Map(dest => dest.IsMain, src => src.IsMain);
-        
+
         config.NewConfig<ProductReview, ProductReviewDto>()
             .Map(dest => dest.UserId, src => src.UserId)
             .Map(dest => dest.UserName, src => src.User.Email)
             .Map(dest => dest.Comment, src => src.Comment)
             .Map(dest => dest.Rating, src => src.Rating)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt);
+    }
+}
+
+
+public static class ProductMappingExtensions
+{
+    public static IQueryable<ProductPreviewDto> ToProductPreviewDto(this IQueryable<Product> query)
+    {
+        return query.Select(p => new ProductPreviewDto()
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Price = p.Price,
+            SoldAmount = p.SoldAmount,
+            AverageRating = p.AverageRating,
+            ThumbnailUrl = p.Images
+                .Where(i => i.IsMain)
+                .Select(i => i.ImageKey)
+                .FirstOrDefault(),
+            CategoryName = p.Category.Name,
+        });
     }
 }
