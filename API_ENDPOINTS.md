@@ -7,6 +7,8 @@ This document lists the available API endpoints for the EShopApp application.
 - Add items to cart: `POST /api/Cart/add-to-cart`
 - View cart: `GET /api/Cart`
 - Clear cart: `DELETE /api/Cart/clear-cart`
+- Update Item in cart: `PUT /api/Cart/update-item`
+- Remove item from cart: `DELETE /api/Cart/remove-item/{productId}`
 - Checkout: `POST /api/Cart/checkout`
 
 ## Category Management
@@ -53,6 +55,7 @@ This document lists the available API endpoints for the EShopApp application.
 - Get current user's information: `GET /api/Users/me`
 - Get user by ID: `GET /api/Users/{id}`
 - Revoke token: `DELETE /api/Users/revoke-token`
+- Delete user: `DELETE /api/Users/{id}`
 
 ## Wishlist Management
 
