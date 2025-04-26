@@ -48,9 +48,15 @@ app.Use(async (context, next) =>
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    if (!app.Environment.IsEnvironment("Testing")) // Skip seeding in testing
+    {
+        await seeder.SeedAsync();
+        await seeder.SetUpRoles();
+    }
     await seeder.MigrateAsync();
-    await seeder.SetUpRoles();
-    await seeder.SeedAsync();
 }
 
 app.Run();
+
+
+public partial class Program { }

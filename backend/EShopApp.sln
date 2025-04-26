@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{746DBFC7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EShopApp.Tests", "tests\EShopApp.Tests\EShopApp.Tests.csproj", "{0137946C-4350-425F-8E8A-CC0D2274377D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EShopApp.IntegrationTests", "tests\EShopApp.IntegrationTests\EShopApp.IntegrationTests.csproj", "{14ABF0D0-A516-44B5-88EF-5D33196497B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{0137946C-4350-425F-8E8A-CC0D2274377D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0137946C-4350-425F-8E8A-CC0D2274377D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0137946C-4350-425F-8E8A-CC0D2274377D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14ABF0D0-A516-44B5-88EF-5D33196497B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14ABF0D0-A516-44B5-88EF-5D33196497B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14ABF0D0-A516-44B5-88EF-5D33196497B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14ABF0D0-A516-44B5-88EF-5D33196497B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -56,5 +62,6 @@ Global
 		{75039582-F1D4-45C4-B3C4-97B72463029D} = {5DD25D64-54B0-4434-B53B-541DA45EEC6E}
 		{C7025D80-90AF-4DDF-AF65-6D6B38F5C7CF} = {5DD25D64-54B0-4434-B53B-541DA45EEC6E}
 		{0137946C-4350-425F-8E8A-CC0D2274377D} = {746DBFC7-3543-467A-979D-9D83D8761AA6}
+		{14ABF0D0-A516-44B5-88EF-5D33196497B9} = {746DBFC7-3543-467A-979D-9D83D8761AA6}
 	EndGlobalSection
 EndGlobal
