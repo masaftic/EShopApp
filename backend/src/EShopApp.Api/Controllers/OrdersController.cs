@@ -1,4 +1,6 @@
+using EShopApp.Application.Orders.Commands;
 using EShopApp.Application.Orders.Queries;
+using EShopApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,12 +25,49 @@ public class OrdersController : ApiController
         return result.Match(Ok, HandleErrors);
     }
 
+    [HttpGet("track/{id:int}")]
+    public async Task<IActionResult> TrackOrder(int id)
+    {
+        var query = new TrackOrderQuery(id);
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
     [HttpGet("my")]
-    public async Task<IActionResult> GetMyOrders(int id)
+    public async Task<IActionResult> GetMyOrders()
     {
         var query = new GetOrderByUser();
         var result = await _mediator.Send(query);
 
         return result.Match(Ok, HandleErrors);
+    }
+
+
+    [HttpGet("all")]
+    public async Task<IActionResult> GetAllOrders()
+    {
+        var query = new GetAllOrdersQuery();
+        var result = await _mediator.Send(query);
+
+        return result.Match(Ok, HandleErrors);
+    }
+
+    [HttpPut("{id:int}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] OrderStatus orderStatus)
+    {
+        var command = new UpdateOrderStatusCommand(id, orderStatus);
+        var result = await _mediator.Send(command);
+
+        return result.Match(res => NoContent(), HandleErrors);
+    }
+
+    [HttpPost("{id:int}/cancel")]
+    public async Task<IActionResult> CancelOrder(int id)
+    {
+        var command = new CancelOrderCommand(id);
+        var result = await _mediator.Send(command);
+
+        return result.Match(res => NoContent(), HandleErrors);
     }
 }

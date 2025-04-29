@@ -119,15 +119,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const result = await response.json();
         if (response.ok) {
+            // Hide the checkout button and show the payment element
+            checkoutButton.style.display = 'none';
+
             const { clientSecret } = result;
 
-            // Create and mount the Payment Element
-            elements = stripe.elements({ clientSecret });
+            // Configure the appearance to include the address element
+            const appearance = {
+                theme: 'stripe',
+                variables: {
+                    colorPrimary: '#0570de',
+                    colorBackground: '#f6f9fc',
+                    colorText: '#30313d',
+                    colorDanger: '#df1b41',
+                },
+                layout: {
+                    type: 'tabs',
+                    defaultCollapsed: false,
+                    radios: true,
+                    spacedAccordionItems: true,
+                },
+                fields: {
+                    billingDetails: {
+                        address: {
+                            line1: 'auto',
+                            line2: 'auto',
+                            city: 'auto',
+                            state: 'auto',
+                            postalCode: 'auto',
+                            country: 'auto',
+                        },
+                    },
+                },
+            };
+
+            // Create and mount the Payment Element with address fields
+            elements = stripe.elements({ clientSecret, appearance });
             paymentElement = elements.create('payment');
             paymentElement.mount('#payment-element');
 
+            addressElement = elements.create('address', { mode: 'shipping' });
+            addressElement.mount('#address-element');
+
             // Show the Pay button
             payButton.style.display = 'block';
+
         } else {
             document.getElementById('checkout-result').textContent = 'Checkout failed.';
         }

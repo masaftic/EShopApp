@@ -11,11 +11,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.OwnsOne(u => u.Address, address =>
         {
-            address.Property(a => a.AddressLine1).HasColumnName("AddressLine1").HasMaxLength(100);
-            address.Property(a => a.AddressLine2).HasColumnName("AddressLine2").HasMaxLength(100);
+            address.Property(a => a.StreetLine1).HasColumnName("AddressLine1").HasMaxLength(100);
+            address.Property(a => a.StreetLine2).HasColumnName("AddressLine2").HasMaxLength(100);
             address.Property(a => a.City).HasColumnName("City").HasMaxLength(50);
             address.Property(a => a.State).HasColumnName("State").HasMaxLength(50);
-            address.Property(a => a.ZipCode).HasColumnName("ZipCode").HasMaxLength(20);
+            address.Property(a => a.PostalCode).HasColumnName("ZipCode").HasMaxLength(20);
         });
 
         builder

@@ -12,6 +12,7 @@ public record UpdateUserAddressCommand(
     string AddressLine2,
     string City,
     string State,
+    string Country,
     string ZipCode) : IRequest<ErrorOr<Updated>>;
 
 
@@ -35,6 +36,10 @@ public class UpdateUserAddressCommandValidator : AbstractValidator<UpdateUserAdd
         RuleFor(x => x.City)
             .NotEmpty().WithMessage("City is required.")
             .MaximumLength(50).WithMessage("City must be at most 50 characters long.");
+        
+        RuleFor(x => x.Country)
+            .NotEmpty().WithMessage("Country is required.")
+            .MaximumLength(50).WithMessage("Country must be at most 50 characters long.");
 
         RuleFor(x => x.State)
             .NotEmpty().WithMessage("State is required.")
@@ -65,7 +70,7 @@ public class UpdateUserAddressCommandHandler : IRequestHandler<UpdateUserAddress
                 description: "Unexpected User is null. This should never happen.");
         }
 
-        var address = new Address(request.AddressLine1, request.AddressLine2, request.City, request.State, request.ZipCode);
+        var address = new Address(request.AddressLine1, request.AddressLine2, request.City, request.State, request.Country, request.ZipCode);
 
         user.UpdateAddress(address);
         _dbContext.DomainUsers.Update(user);

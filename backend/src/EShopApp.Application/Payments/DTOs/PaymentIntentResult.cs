@@ -1,3 +1,5 @@
+using EShopApp.Domain.ValueObjects;
+
 namespace EShopApp.Application.Payments.DTOs;
 
 public record PaymentIntentResult(
@@ -7,5 +9,7 @@ public record PaymentIntentResult(
     long Amount,
     long AmountReceived,
     string Currency,
-    string Description,
-    Dictionary<string, string> Metadata);
+    string? Description,
+    Dictionary<string, string> Metadata,
+    Address? ShippingAddress
+);

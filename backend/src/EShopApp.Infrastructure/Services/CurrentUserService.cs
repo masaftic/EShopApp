@@ -15,4 +15,9 @@ public class CurrentUserService : ICurrentUserService
 
     public string UserId => _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("User is not authenticated");
     public string UserName => _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? throw new Exception("User is not authenticated");
+
+    public bool IsInRole(string role)
+    {
+        return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
+    }
 }

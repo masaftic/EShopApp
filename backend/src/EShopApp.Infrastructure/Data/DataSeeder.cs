@@ -46,7 +46,7 @@ public class DataSeeder
 
             var cart = new Cart(admin.Id);
             var wishlist = new Wishlist(admin.Id);
-            var address = new Address("456 Elm Street", "Suite 200", "Los Angeles", "CA", "12345");
+            var address = new Address("456 Elm Street", "Suite 200", "Los Angeles", "CA", "USA", "12345");
             admin.UpdateAddress(address);
             await _context.AddAsync(wishlist);
             await _context.AddAsync(cart);

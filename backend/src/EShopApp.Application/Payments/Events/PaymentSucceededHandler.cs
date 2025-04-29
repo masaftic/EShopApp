@@ -4,6 +4,7 @@ using EShopApp.Application.Payments.Services;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Enums;
 using EShopApp.Domain.Events;
+using EShopApp.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -46,11 +47,13 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
 
         if (paymentIntentResult.IsError)
         {
-            _logger.LogError("Could not get paymentIntent for {PaymentIntentId}", notification.PaymentIntentId);
+            _logger.LogError("Could not get paymentIntent for {PaymentIntentId}. Errors: {@Errors}", notification.PaymentIntentId, paymentIntentResult.Errors);
             throw new Exception($"Could not get paymentIntent for {notification.PaymentIntentId}");
         }
 
         var paymentIntent = paymentIntentResult.Value;
+
+        var shippingAddress = paymentIntent.ShippingAddress ?? Address.Default;
 
         using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         try
@@ -78,7 +81,7 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
             await _dbContext.Payments.AddAsync(payment, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            var order = await _orderService.PlaceOrderAsync(userId, reservation, payment, cancellationToken);
+            var order = await _orderService.PlaceOrderAsync(userId, reservation, payment, shippingAddress, cancellationToken);
 
             await transaction.CommitAsync(cancellationToken);
 

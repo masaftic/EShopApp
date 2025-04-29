@@ -14,20 +14,22 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMany(o => o.OrderItems)
             .WithOne(oi => oi.Order)
             .HasForeignKey(oi => oi.OrderId);
-        
+
         builder
             .HasOne(o => o.User)
             .WithMany(u => u.Orders)
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.NoAction);
-        
+
         builder.Property(o => o.TotalAmount).HasColumnType("decimal(18,2)");
-        
-        // builder.OwnsOne(o => o.ShippingAddress, address =>
-        // {
-        //     address.Property(a => a.Street).IsRequired().HasMaxLength(200);
-        //     address.Property(a => a.City).IsRequired().HasMaxLength(100);
-        //     address.Property(a => a.Country).IsRequired().HasMaxLength(100);
-        // });
+
+        builder.OwnsOne(u => u.ShippingAddress, address =>
+        {
+            address.Property(a => a.StreetLine1).HasColumnName("AddressLine1").HasMaxLength(100);
+            address.Property(a => a.StreetLine2).HasColumnName("AddressLine2").HasMaxLength(100);
+            address.Property(a => a.City).HasColumnName("City").HasMaxLength(50);
+            address.Property(a => a.State).HasColumnName("State").HasMaxLength(50);
+            address.Property(a => a.PostalCode).HasColumnName("ZipCode").HasMaxLength(20);
+        });
     }
 }

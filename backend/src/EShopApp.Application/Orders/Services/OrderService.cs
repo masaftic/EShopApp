@@ -1,6 +1,7 @@
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Payments.Services;
 using EShopApp.Domain.Entities;
+using EShopApp.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace EShopApp.Application.Orders.Services;
@@ -14,22 +15,26 @@ public class OrderService : IOrderService
         _dbContext = dbContext;
     }
 
-    public async Task<Order> PlaceOrderAsync(int userId, Reservation reservation, Payment payment, CancellationToken cancellationToken)
+    public async Task<Order> PlaceOrderAsync(int userId, Reservation reservation, Payment payment, Address shippingAddress, CancellationToken cancellationToken)
     {
-        var order = new Order(userId, reservation.Id, payment.Id, payment.Amount);
+        var order = new Order(userId, reservation.Id, payment.Id, payment.Amount, shippingAddress);
 
         var items = reservation.ReservationItems.Select(ri => (ri.ProductId, ri.Quantity, ri.UnitPrice));
-
         order.AddItems(items);
 
+
+        // Increase sold amount for each product
         var productIds = reservation.ReservationItems.Select(ri => ri.ProductId).ToList();
         var products = await _dbContext.Products.Where(p => productIds.Contains(p.Id)).ToListAsync(cancellationToken: cancellationToken);
-
         foreach (var product in products)
         {
             product.IncreaseSoldAmount(reservation.ReservationItems.First(ri => ri.ProductId == product.Id).Quantity);
         }
 
+
+        // Decrease stock for each product in the reservation
+        // and create inventory transactions
+        // for each product in the reservation
         var inventories = await _dbContext.Inventories
             .Where(i => productIds.Contains(i.ProductId))
             .ToDictionaryAsync(i => i.ProductId, i => i, cancellationToken);

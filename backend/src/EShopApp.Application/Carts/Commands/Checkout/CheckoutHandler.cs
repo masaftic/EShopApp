@@ -30,10 +30,6 @@ public class CheckoutCommandHandler : IRequestHandler<CheckoutCommand, ErrorOr<P
     {
         var userId = int.Parse(_currentUserService.UserId);
         var user = await _dbContext.DomainUsers.FindAsync([userId], cancellationToken);
-        if (user!.Address is null)
-        {
-            return Error.Validation("User.Address", "User address is required for checkout");
-        }
 
         var cart = await GetUserCartWithProductsAndInventoriesAsync(userId, cancellationToken);
 

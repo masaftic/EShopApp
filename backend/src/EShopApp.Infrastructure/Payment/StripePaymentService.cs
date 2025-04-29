@@ -1,12 +1,11 @@
 using ErrorOr;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Payments.DTOs;
-using EShopApp.Infrastructure.Payment;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
 
-namespace EShopApp.Infrastructure.Services;
+namespace EShopApp.Infrastructure.Payment;
 
 public class StripePaymentService : IPaymentService
 {
@@ -33,7 +32,7 @@ public class StripePaymentService : IPaymentService
                 AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions()
                 {
                     Enabled = true,
-                }
+                },
             };
 
             var paymentIntent = await paymentIntentService.CreateAsync(paymentIntentOptions);
@@ -46,7 +45,9 @@ public class StripePaymentService : IPaymentService
                 paymentIntent.AmountReceived,
                 paymentIntent.Currency,
                 paymentIntent.Description,
-                paymentIntent.Metadata);
+                paymentIntent.Metadata,
+                null // Shipping address not typically available immediately
+            );
         }
         catch (StripeException e)
         {
@@ -60,7 +61,23 @@ public class StripePaymentService : IPaymentService
         try
         {
             var paymentIntentService = new PaymentIntentService();
-            var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId);
+            var paymentIntent = await paymentIntentService.GetAsync(paymentIntentId, new PaymentIntentGetOptions
+            {
+                Expand = new List<string> { "shipping" } // Ensure shipping details are expanded
+            });
+
+            Domain.ValueObjects.Address? shippingAddress = null;
+            if (paymentIntent.Shipping?.Address != null)
+            {
+                shippingAddress = new Domain.ValueObjects.Address(
+                    paymentIntent.Shipping.Address.Line1 ?? string.Empty,
+                    paymentIntent.Shipping.Address.Line2 ?? string.Empty,
+                    paymentIntent.Shipping.Address.City ?? string.Empty,
+                    paymentIntent.Shipping.Address.State ?? string.Empty,
+                    paymentIntent.Shipping.Address.Country ?? string.Empty,
+                    paymentIntent.Shipping.Address.PostalCode ?? string.Empty
+                );
+            }
 
             return new PaymentIntentResult(
                 paymentIntent.Id,
@@ -70,12 +87,19 @@ public class StripePaymentService : IPaymentService
                 paymentIntent.AmountReceived,
                 paymentIntent.Currency,
                 paymentIntent.Description,
-                paymentIntent.Metadata);
+                paymentIntent.Metadata,
+                shippingAddress
+            );
         }
         catch (StripeException e)
         {
-            Console.WriteLine(e);
-            return Error.Conflict(description: e.StripeError.Message);
+            _logger.LogError(e, "Stripe API error getting PaymentIntent: {PaymentIntentId}", paymentIntentId);
+            return Error.Failure(description: $"Failed to retrieve payment intent: {e.StripeError?.Message ?? e.Message}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting PaymentIntent: {PaymentIntentId}", paymentIntentId);
+            return Error.Unexpected(description: "An unexpected error occurred while retrieving payment details.");
         }
     }
 
