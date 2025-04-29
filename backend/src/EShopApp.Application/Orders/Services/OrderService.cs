@@ -1,4 +1,6 @@
 using EShopApp.Application.Common.Interfaces.Persistence;
+using EShopApp.Application.Common.Interfaces.Services;
+using EShopApp.Application.Inventories.Services;
 using EShopApp.Application.Payments.Services;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.ValueObjects;
@@ -9,10 +11,12 @@ namespace EShopApp.Application.Orders.Services;
 public class OrderService : IOrderService
 {
     private readonly IApplicationDbContext _dbContext;
+    private readonly IReservationService _reservationService;
 
-    public OrderService(IApplicationDbContext dbContext)
+    public OrderService(IApplicationDbContext dbContext, IReservationService reservationService)
     {
         _dbContext = dbContext;
+        _reservationService = reservationService;
     }
 
     public async Task<Order> PlaceOrderAsync(int userId, Reservation reservation, Payment payment, Address shippingAddress, CancellationToken cancellationToken)
@@ -31,31 +35,13 @@ public class OrderService : IOrderService
             product.IncreaseSoldAmount(reservation.ReservationItems.First(ri => ri.ProductId == product.Id).Quantity);
         }
 
-
-        // Decrease stock for each product in the reservation
-        // and create inventory transactions
-        // for each product in the reservation
-        var inventories = await _dbContext.Inventories
-            .Where(i => productIds.Contains(i.ProductId))
-            .ToDictionaryAsync(i => i.ProductId, i => i, cancellationToken);
-
-        var inventoryTransactions = new List<InventoryTransaction>();
-        foreach (var ri in reservation.ReservationItems)
+        var result = await _reservationService.FinalizeReservationAsync(reservation, cancellationToken);
+        if (result.IsError)
         {
-            var inventory = inventories[ri.ProductId];
-            inventory.DecreaseStock(ri.Quantity);
-
-            inventoryTransactions.Add(new InventoryTransaction
-            {
-                InventoryId = inventory.Id,
-                Quantity = -ri.Quantity,
-                TransactionType = InventoryTransactionType.Outbound,
-                Timestamp = DateTime.UtcNow,
-                Reason = "Order Placed"
-            });
+            // Shouldn't happen
+            throw new Exception($"Failed to finalize reservation: {result.Errors}");
         }
 
-        _dbContext.InventoryTransactions.AddRange(inventoryTransactions);
         await _dbContext.Orders.AddAsync(order, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 

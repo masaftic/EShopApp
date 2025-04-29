@@ -36,17 +36,16 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
 
         if (reservation is null)
         {
+            // Shouldn't happen ideally.
             _logger.LogError("No reservation found for PaymentIntentId: {PaymentIntentId}", notification.PaymentIntentId);
             throw new Exception($"No reservation found for {notification.PaymentIntentId}");
         }
-
-        reservation.Status = ReservationStatus.Fulfilled;
-        reservation.UpdatedAt = DateTime.UtcNow;
 
         var paymentIntentResult = await _paymentService.GetPaymentIntentAsync(notification.PaymentIntentId);
 
         if (paymentIntentResult.IsError)
         {
+            // Shouldn't happen ideally.
             _logger.LogError("Could not get paymentIntent for {PaymentIntentId}. Errors: {@Errors}", notification.PaymentIntentId, paymentIntentResult.Errors);
             throw new Exception($"Could not get paymentIntent for {notification.PaymentIntentId}");
         }
@@ -65,7 +64,6 @@ public class PaymentSucceededHandler : INotificationHandler<PaymentSucceededEven
                 .FirstAsync(c => c.UserId == reservation.UserId, cancellationToken);
 
             userCart.ClearCart();
-            _dbContext.Carts.Update(userCart);
 
             var payment = new Payment
             {

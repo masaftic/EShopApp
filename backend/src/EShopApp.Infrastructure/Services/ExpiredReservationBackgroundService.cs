@@ -1,3 +1,4 @@
+using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Domain.Entities;
 using EShopApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ public class ExpiredReservationBackgroundService : BackgroundService
             {
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var reservationService = scope.ServiceProvider.GetRequiredService<IReservationService>();
 
                 var expiredReservations = await dbContext
                     .Reservations
@@ -38,39 +40,12 @@ public class ExpiredReservationBackgroundService : BackgroundService
 
                 foreach (var expiredReservation in expiredReservations)
                 {
-                    await using var transaction = await dbContext.Database.BeginTransactionAsync(stoppingToken);
+                    using var transaction = await dbContext.Database.BeginTransactionAsync(stoppingToken);
 
                     try
                     {
-                        // Release reserved stock
-                        var productIds = expiredReservation.ReservationItems
-                            .Select(ri => ri.ProductId)
-                            .ToList();
-
-                        var inventories = await dbContext.Inventories
-                            .Where(i => productIds.Contains(i.ProductId))
-                            .ToListAsync(stoppingToken);
-
-                        foreach (var item in expiredReservation.ReservationItems)
-                        {
-                            var inventory = inventories.First(i => i.ProductId == item.ProductId);
-                            inventory.Release(item.Quantity); // Releases reserved stock
-
-                            // Log inventory transaction
-                            dbContext.InventoryTransactions.Add(new InventoryTransaction(
-                                inventory.Id,
-                                item.Quantity,
-                                InventoryTransactionType.Release,
-                                DateTime.UtcNow,
-                                $"Expired Reservation: {expiredReservation.Id}"
-                            ));
-                        }
-                        
-                        expiredReservation.ReservationItems.Clear();
-
-                        // Update reservation status
-                        expiredReservation.Status = ReservationStatus.Expired;
-                        expiredReservation.UpdatedAt = DateTime.UtcNow;
+                        // Release the reservation
+                        await reservationService.ReleaseReservationAsync(expiredReservation, stoppingToken);
 
                         await dbContext.SaveChangesAsync(stoppingToken);
                         await transaction.CommitAsync(stoppingToken);

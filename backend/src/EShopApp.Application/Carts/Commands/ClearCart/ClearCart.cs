@@ -13,11 +13,13 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, ErrorOr
 {
     private readonly IApplicationDbContext _dbContext;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IReservationService _reservationService;
 
-    public ClearCartCommandHandler(IApplicationDbContext dbContext, ICurrentUserService currentUserService)
+    public ClearCartCommandHandler(IApplicationDbContext dbContext, ICurrentUserService currentUserService, IReservationService reservationService)
     {
         _dbContext = dbContext;
         _currentUserService = currentUserService;
+        _reservationService = reservationService;
     }
 
     public async Task<ErrorOr<Success>> Handle(ClearCartCommand request, CancellationToken cancellationToken)
@@ -33,16 +35,7 @@ public class ClearCartCommandHandler : IRequestHandler<ClearCartCommand, ErrorOr
 
         if (reservation != null)
         {
-            // Release inventory reservations
-            foreach (var reservationItem in reservation.ReservationItems)
-            {
-                var inventory = await _dbContext.Inventories
-                    .FirstOrDefaultAsync(i => i.ProductId == reservationItem.ProductId, cancellationToken: cancellationToken);
-
-                inventory?.Release(reservationItem.Quantity);
-            }
-
-            _dbContext.Reservations.Remove(reservation);
+            await _reservationService.ReleaseReservationAsync(reservation, cancellationToken);
         }
 
         userCart.ClearCart();
