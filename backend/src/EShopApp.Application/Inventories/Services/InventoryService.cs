@@ -62,8 +62,7 @@ public class InventoryService : IInventoryService
         return Result.Success;
     }
 
-    public async Task<ErrorOr<Success>> CheckStocks(IList<(int productId,
-        int quantity)> productQuantities, CancellationToken cancellationToken)
+    public async Task<ErrorOr<Success>> CheckStocks(IList<(int productId, int quantity)> productQuantities, CancellationToken cancellationToken)
     {
         var productIds = productQuantities.Select(pq => pq.productId).ToList();
         var inventories = _dbContext.Inventories.Where(i => productIds.Contains(i.ProductId));
