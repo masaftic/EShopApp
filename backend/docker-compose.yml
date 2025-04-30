@@ -28,15 +28,15 @@ services:
       timeout: 5s
       retries: 3
 
-  # redis:
-  #   image: redis:latest
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis_data:/data
-  #   command: redis-server --appendonly yes
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
 
 
 volumes:
   sqlserver_data:
-  # redis_data:
+  redis_data:

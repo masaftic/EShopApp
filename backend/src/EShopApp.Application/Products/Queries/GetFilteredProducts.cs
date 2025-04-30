@@ -1,5 +1,6 @@
 using ErrorOr;
 using EShopApp.Application.Common.DTOs;
+using EShopApp.Application.Common.Interfaces.Caching;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Products.DTOs;
@@ -18,8 +19,11 @@ public record GetFilteredProductsQuery(
     string? SortBy = "name",
     string? SortOrder = "asc",
     int PageNumber = 1,
-    int PageSize = 10) : IRequest<ErrorOr<PaginatedList<ProductPreviewDto>>>;
-
+    int PageSize = 10) : ICachedQuery<ErrorOr<PaginatedList<ProductPreviewDto>>>
+{
+    public string CacheKey => $"FilteredProducts_{SearchTerm}_{MinPrice}_{MaxPrice}_{CategoryId}_{SortBy}_{SortOrder}_{PageNumber}_{PageSize}";
+    public TimeSpan CacheExpiration => TimeSpan.FromMinutes(5);
+}
 
 public class GetFilteredProductsQueryValidator : AbstractValidator<GetFilteredProductsQuery>
 {

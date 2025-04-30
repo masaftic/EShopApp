@@ -1,5 +1,6 @@
 using ErrorOr;
 using EShopApp.Application.Common.DTOs;
+using EShopApp.Application.Common.Interfaces.Caching;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Products.DTOs;
@@ -11,7 +12,12 @@ using Microsoft.EntityFrameworkCore;
 namespace EShopApp.Application.Products.Queries;
 
 public record GetTopRatedProductsQuery(int PageNumber = 1, int PageSize = 10)
-    : IRequest<ErrorOr<PaginatedList<ProductPreviewDto>>>;
+    : ICachedQuery<ErrorOr<PaginatedList<ProductPreviewDto>>>
+{
+    public string CacheKey => $"TopRatedProducts_{PageNumber}_{PageSize}";
+    public TimeSpan CacheExpiration => TimeSpan.FromMinutes(5);
+}
+
 
 public class GetTopRatedProductsQueryHandler
     : IRequestHandler<GetTopRatedProductsQuery, ErrorOr<PaginatedList<ProductPreviewDto>>>

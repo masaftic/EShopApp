@@ -1,5 +1,6 @@
 using ErrorOr;
 using EShopApp.Application.Categories.DTOs;
+using EShopApp.Application.Common.Interfaces.Caching;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Domain.Entities;
@@ -10,8 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShopApp.Application.Categories.Queries;
 
-public record GetAllCategoriesQuery : IRequest<ErrorOr<List<CategoryDto>>>;
-
+public record GetAllCategoriesQuery : ICachedQuery<ErrorOr<List<CategoryDto>>>
+{
+    public string CacheKey => "AllCategories";
+    public TimeSpan CacheExpiration => TimeSpan.FromMinutes(15);
+}
 
 public class GetCategoriesQueryHandler : IRequestHandler<GetAllCategoriesQuery, ErrorOr<List<CategoryDto>>>
 {

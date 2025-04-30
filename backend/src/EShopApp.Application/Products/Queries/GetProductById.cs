@@ -1,4 +1,5 @@
 using ErrorOr;
+using EShopApp.Application.Common.Interfaces.Caching;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Application.Common.Interfaces.Services;
 using EShopApp.Application.Products.DTOs;
@@ -11,7 +12,11 @@ using Microsoft.EntityFrameworkCore;
 namespace EShopApp.Application.Products.Queries.GetProductById;
 
 public record GetProductByIdQuery(
-    int Id) : IRequest<ErrorOr<ProductDto>>;
+    int Id) : ICachedQuery<ErrorOr<ProductDto>>
+{
+    public string CacheKey => $"Product_{Id}";
+    public TimeSpan CacheExpiration => TimeSpan.FromMinutes(10);
+}
 
 public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ErrorOr<ProductDto>>
 {

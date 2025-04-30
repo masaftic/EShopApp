@@ -1,5 +1,6 @@
 using ErrorOr;
 using EShopApp.Application.Categories.DTOs;
+using EShopApp.Application.Common.Interfaces.Caching;
 using EShopApp.Application.Common.Interfaces.Persistence;
 using EShopApp.Domain.Entities;
 using EShopApp.Domain.Errors;
@@ -10,7 +11,11 @@ using Microsoft.EntityFrameworkCore;
 namespace EShopApp.Application.Categories.Queries;
 
 public record GetCategoryByIdQuery(
-    int Id) : IRequest<ErrorOr<CategoryDto>>;
+    int Id) : ICachedQuery<ErrorOr<CategoryDto>>
+{
+    public string CacheKey => $"Category_{Id}";
+    public TimeSpan CacheExpiration => TimeSpan.FromMinutes(10);
+}
 
 public class GetCategoryByIdQueryHandler : IRequestHandler<GetCategoryByIdQuery, ErrorOr<CategoryDto>>
 {

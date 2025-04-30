@@ -21,11 +21,18 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
             cfg.AddOpenBehavior(typeof(RequestLoggingPipelineBehavior<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(QueryCachingPipelineBehavior<,>));
         });
 
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IReservationService, ReservationService>();
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = "localhost:6379"; // Redis server address
+            options.InstanceName = "EShopAppCache:"; // Prefix for cache keys
+        });
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
