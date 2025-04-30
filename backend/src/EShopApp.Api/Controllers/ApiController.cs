@@ -54,10 +54,4 @@ public class ApiController : ControllerBase
         };
     }
 
-    [AllowAnonymous]
-    [HttpGet("api/hello-world")]
-    public IActionResult HelloWorld()
-    {
-        return Ok("Hello World!");
-    }
 }
