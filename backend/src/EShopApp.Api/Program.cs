@@ -2,6 +2,8 @@ using EShopApp.Api;
 using EShopApp.Application;
 using EShopApp.Infrastructure;
 using EShopApp.Infrastructure.Data;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 {
@@ -29,6 +31,10 @@ var app = builder.Build();
     }
     
     // app.UseHttpsRedirection();
+    app.MapHealthChecks("/_health", new HealthCheckOptions()
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
     app.UseCors("AllowMyClient");
     app.UseRateLimiter();
     app.UseRouting();

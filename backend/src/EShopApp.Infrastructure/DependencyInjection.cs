@@ -39,6 +39,11 @@ public static class DependencyInjection
         AddPersistence(services, configuration);
         AddAuth(services, configuration);
 
+        services.AddHealthChecks()
+            .AddCheck<DatabaseHealthCheck>("Database")
+            .AddCheck<RedisHealthCheck>("Redis");
+
+
         return services;
     }
 
