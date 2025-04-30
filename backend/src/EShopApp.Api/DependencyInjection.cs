@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using ErrorOr;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 
 namespace EShopApp.Api;
@@ -63,6 +65,32 @@ public static class DependencyInjection
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials());
+        });
+
+        var logger = services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.OnRejected = (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.Headers["Retry-After"] = TimeSpan.FromSeconds(10).TotalSeconds.ToString();
+                return ValueTask.CompletedTask;
+            };
+
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+            {
+                var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                logger.LogInformation("IP Address: {Ip}", ip);
+                return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 100,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0
+                });
+            });
         });
 
         return services;

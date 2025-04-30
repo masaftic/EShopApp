@@ -53,4 +53,11 @@ public class ApiController : ControllerBase
             _ => StatusCodes.Status500InternalServerError
         };
     }
+
+    [AllowAnonymous]
+    [HttpGet("api/hello-world")]
+    public IActionResult HelloWorld()
+    {
+        return Ok("Hello World!");
+    }
 }

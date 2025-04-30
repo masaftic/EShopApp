@@ -27,11 +27,10 @@ var app = builder.Build();
     {
         app.UseExceptionHandler("/error");
     }
-
-
+    
     // app.UseHttpsRedirection();
     app.UseCors("AllowMyClient");
-
+    app.UseRateLimiter();
     app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();
@@ -41,7 +40,8 @@ var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
-    Console.WriteLine($"{context.Request.Method} {context.Request.Path}");
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("{Method} {Path}", context.Request.Method, context.Request.Path);
     await next();
 });
 
