@@ -25,12 +25,18 @@ This document lists the available API endpoints for the EShopApp application.
 - Retrieve all inventories: `GET /api/Inventories`
 - Get a specific inventory by ID: `GET /api/Inventories/{inventoryId}`
 - Get low stock inventories: `GET /api/Inventories/low-stock`
+- Add new inventory: `POST /api/Inventories`
+- Update inventory: `PUT /api/Inventories/{inventoryId}`
 - Adjust inventory: `POST /api/Inventories/{inventoryId}/adjust`
 
 ## Order Management
 
 - Get order by ID: `GET /api/Orders/{id}`
 - Get current user's orders: `GET /api/Orders/my`
+- Get all orders: `GET /api/Orders`
+- Get all orders by user ID: `GET /api/Orders/user/{userId}`
+- Update order status: `PUT /api/Orders/{id}`
+- Cancel order: `DELETE /api/Orders/{id}`
 
 ## Product Management
 
