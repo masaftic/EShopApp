@@ -33,6 +33,7 @@ For a detailed list of API endpoints, see [API_ENDPOINTS.md](./API_ENDPOINTS.md)
 - xUnit
 - Amazon S3 (for image storage)
 - Stripe (for payment processing)
+- Redis (for caching)
 
 ## Project Structure
 
@@ -47,38 +48,43 @@ The project is structured into the following layers:
 
 ### Prerequisites
 
-- .NET 9.0 SDK
-- Visual Studio or VS Code with C# extension
-- SQL Server
+- Docker and Docker Compose
 
 ### Setup
 
 1. Clone the repository.
-2. Update the `appsettings.json` file in the `EShopApp.Api` project with your database connection string.
-3. Open a terminal in the `EShopApp.Api` directory.
-4. Run `dotnet restore` to install the dependencies.
-5. Run `dotnet build` to build the project.
-6. Run `dotnet run` to start the application.
-
-## Running Migrations
-
-1. Ensure you have the Entity Framework Core tools installed. If not, run:
+2. Open a terminal in the project root directory.
+3. Run the following command to start the application using Docker:
 
     ```bash
-    dotnet tool install --global dotnet-ef
+    docker-compose up --build
     ```
 
-2. Open a terminal in the `EShopApp.Infrastructure` directory.
-3. Run the following command to apply the migrations:
+4. The API will be available at `http://localhost:5000`.
+
+### Running Migrations
+
+If you need to apply migrations manually, follow these steps:
+
+1. Open a terminal in the `EShopApp.Api` container:
+
+    ```bash
+    docker exec -it <container_name> bash
+    ```
+
+    Replace `<container_name>` with the name of the running API container.
+
+2. Run the following command to apply the migrations:
 
     ```bash
     dotnet ef database update -p ../EShopApp.Infrastructure -s ../EShopApp.Api
     ```
 
-## Running Tests
+### Running Tests
 
-1. Open a terminal in the `EShopApp.Tests` directory.
-2. Run `dotnet test` to execute the unit tests.
+1. Ensure the application is running.
+2. Open a terminal in the `EShopApp.Tests` directory.
+3. Run `dotnet test` to execute the unit tests.
 
 ## Contributing
 
