@@ -9,6 +9,7 @@ using Mapster;
 using MapsterMapper;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace EShopApp.Application;
 
@@ -27,12 +28,6 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IInventoryService, InventoryService>();
         services.AddScoped<IReservationService, ReservationService>();
-
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = "localhost:6379"; // Redis server address
-            options.InstanceName = "EShopAppCache:"; // Prefix for cache keys
-        });
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 

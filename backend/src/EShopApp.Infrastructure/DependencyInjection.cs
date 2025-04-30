@@ -20,6 +20,8 @@ using EShopApp.Infrastructure.Data.Identity;
 using Amazon.S3;
 using Dumpify;
 using EShopApp.Infrastructure.ImageStorage;
+using EShopApp.Infrastructure.HealthChecks;
+using StackExchange.Redis;
 
 namespace EShopApp.Infrastructure;
 
@@ -97,6 +99,17 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         services.AddSingleton(identityOptions);
+
+        var redisSettings = configuration.GetSection("RedisSettings").Get<RedisSettings>() ?? throw new ArgumentNullException("Redis settings not found in configuration.");
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisSettings.Configuration;
+            options.InstanceName = redisSettings.InstanceName;
+        });
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(redisSettings.Configuration));
     }
 
     private static void AddAuth(IServiceCollection services, IConfiguration configuration)
